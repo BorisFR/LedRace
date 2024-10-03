@@ -10,7 +10,7 @@ extern "C"
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "Configuration.h"
 #include "olr-settings.h"
 
     extern int DIGITAL_CTRL[MAX_PLAYERS]; // Global Array containig PINs used for the Digital Controllers (ex: Push Buttons)

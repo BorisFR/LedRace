@@ -1,11 +1,21 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-/*------------------------------------------------------*/
-int win_music[] = {
-    2637, 2637, 0, 2637,
-    0, 2093, 2637, 0,
-    3136};
-/*------------------------------------------------------*/
+#include "Configuration.h"
+#include "Parameters.h"
+
+/// @brief All stuff for audio
+class Audio
+{
+public:
+    Audio();
+    void SoundOff();
+    void ChangeAudioMode();
+    void PlayCountdown(countdown phase);
+    void PlayMotorSound(unsigned int frequency);
+    void PlayWinnerMusic();
+
+private:
+};
 
 #endif

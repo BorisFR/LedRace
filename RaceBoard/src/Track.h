@@ -2,7 +2,7 @@
 #define TRACK_h
 
 #include <Arduino.h>
-
+#include "Configuration.h"
 #include "FastLED.h"
 #include "olr-settings.h"
 #include "olr-param.h"

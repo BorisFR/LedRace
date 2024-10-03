@@ -1,6 +1,13 @@
 #include <Arduino.h>
 #include "Configuration.h"
+
+/* ***************************************************************************
+  Audio stuff
+*************************************************************************** */
 #include "Audio.h"
+Audio audio = Audio();
+
+#include "TrackConfiguration.h"
 
 #include "open-led-race.h"
 
@@ -11,9 +18,9 @@
 #include "SoftTimer.h"
 #include "SerialCommand.h"
 
-// #include <Adafruit_NeoPixel.h>
-// Adafruit_NeoPixel track;
-//  = Adafruit_NeoPixel(10, PIN_LED, NEO_GRB + NEO_KHZ800);
+// A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
+char const softwareId[] = "A2P0";
+char const version[] = "1.2.0";
 
 static race_t race;
 static car_t cars[MAX_PLAYERS];
@@ -251,7 +258,8 @@ void setup()
     if (controller_isActive(DIGITAL_CTRL[CTRL_1]))
     { // retain push switch  on reset for activate FX sound
       s_motor = 1;
-      tone(PIN_AUDIO, 100);
+      audio.ChangeAudioMode();
+      // tone(PIN_AUDIO, 100);
     }
   }
 
@@ -335,7 +343,8 @@ void exit_demo_mode(void)
 void enter_configuration_mode()
 {
   debug("enter_configuration_mode");
-  noTone(PIN_AUDIO);
+  audio.SoundOff();
+  // noTone(PIN_AUDIO);
   strip_clear(&tck, false);
   track.show();
 }
@@ -958,31 +967,37 @@ boolean start_race_done()
     {
     case 1:
       debug("start_race_done: 1");
-      tone(PIN_AUDIO, 400);
+      audio.PlayCountdown((countdown)countdown_phase);
+      // tone(PIN_AUDIO, 400);
       track.setPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
       break;
     case 2:
       debug("start_race_done: 2");
-      tone(PIN_AUDIO, 600);
+      audio.PlayCountdown((countdown)countdown_phase);
+      // tone(PIN_AUDIO, 600);
       track.setPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
       track.setPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
       break;
     case 3:
       debug("start_race_done: 3");
-      tone(PIN_AUDIO, 1200);
+      audio.PlayCountdown((countdown)countdown_phase);
+      // tone(PIN_AUDIO, 1200);
       track.setPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
       track.setPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
       break;
     case 4:
       debug("start_race_done: 4");
       startRace_delay.start(CONTDOWN_STARTSOUND_DURATION);
-      tone(PIN_AUDIO, 880);
+      audio.PlayCountdown((countdown)countdown_phase);
+      // tone(PIN_AUDIO, 880);
       track.setPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
       track.setPixelColor(0, track.Color(255, 255, 255));
       break;
     case 5:
       debug("start_race_done: 5");
-      noTone(PIN_AUDIO);
+      audio.PlayCountdown((countdown)countdown_phase);
+      // audio.SoundOff();
+      //  noTone(PIN_AUDIO);
       countdownReset(); // reset for next countdown
       return (true);
     }
@@ -991,7 +1006,8 @@ boolean start_race_done()
   if (startRace_delay.elapsed())
   {
     debug("start_race_done: elapsed");
-    noTone(PIN_AUDIO);
+    audio.SoundOff();
+    // noTone(PIN_AUDIO);
     countdown_new_phase = true;
     countdown_phase++;
   }
@@ -1039,14 +1055,15 @@ void draw_car_tail(track_t *tck, car_t *car)
 
 void sound_winner(track_t *tck, byte winner)
 {
-  debug("sound_winner");
-  int const msize = sizeof(win_music) / sizeof(int);
-  for (int note = 0; note < msize; note++)
-  {
-    tone(PIN_AUDIO, win_music[note], 200);
-    delay(WINNER_AUDIO_DELAY);
-    noTone(PIN_AUDIO);
-  }
+  //  debug("sound_winner");
+  //  int const msize = sizeof(win_music) / sizeof(int);
+  //  for (int note = 0; note < msize; note++)
+  //  {
+  //    tone(PIN_AUDIO, win_music[note], 200);
+  //    delay(WINNER_AUDIO_DELAY);
+  //    noTone(PIN_AUDIO);
+  //  }
+  audio.PlayWinnerMusic();
 }
 
 void draw_car(track_t *tck, car_t *car)
@@ -1404,7 +1421,10 @@ void loop()
 
     track.show();
     if (s_motor == 1)
-      tone(PIN_AUDIO, f_beep + int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
+    {
+      audio.PlayMotorSound(f_beep + int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
+      // tone(PIN_AUDIO, f_beep + int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
+    }
     if (t_beep > 0)
     {
       t_beep--;
