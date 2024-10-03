@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Configuration.h"
+#include "Audio.h"
 
 #include "open-led-race.h"
 
@@ -13,13 +14,6 @@
 // #include <Adafruit_NeoPixel.h>
 // Adafruit_NeoPixel track;
 //  = Adafruit_NeoPixel(10, PIN_LED, NEO_GRB + NEO_KHZ800);
-
-/*------------------------------------------------------*/
-int win_music[] = {
-    2637, 2637, 0, 2637,
-    0, 2093, 2637, 0,
-    3136};
-/*------------------------------------------------------*/
 
 static race_t race;
 static car_t cars[MAX_PLAYERS];
