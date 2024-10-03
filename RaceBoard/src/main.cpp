@@ -26,10 +26,16 @@ static uint32_t car_color[] = {
     CAR_COLOR_4};
 
 /* ***************************************************************************
-  Led Strip stuff
+  Controller stuff
 *************************************************************************** */
 #include "Controller.h"
 Controller controller = Controller();
+
+/* ***************************************************************************
+  Car stuff
+*************************************************************************** */
+#include "Cars.h"
+Cars allCar = Cars();
 
 enum internal_setup
 {
@@ -58,21 +64,21 @@ enum internal_setup
 char const softwareId[] = "A2P0";
 char const version[] = "1.2.0";
 
-static race_t race;
+static TheRace race;
 static OneCar cars[MAX_PLAYERS];
 static OneController switchs[MAX_PLAYERS];
-static OneTrack tck;
+static TheTrack tck;
 char tracksID[NUM_TRACKS][2] = {"U", "M", "B", "I", "O"};
 
-static int countdown_phase = 1;
-static bool countdown_new_phase = true;
+static int countdownCurrentPhase = 1;
+static bool countdownNewPhase = true;
 
 static int const eeadrInfo = 0;
 
 // non blocking delays
-SoftTimer startRace_delay = SoftTimer();  // Autostart, Countdown
-SoftTimer demoMode_delay = SoftTimer();   // Activate Demo Mode on inactivity
-SoftTimer telemetry_delay = SoftTimer(0); // Send Telemetry data
+SoftTimer startRaceDelay = SoftTimer();  // Autostart, Countdown
+SoftTimer demoModeDelay = SoftTimer();   // Activate Demo Mode on inactivity
+SoftTimer telemetryDelay = SoftTimer(0); // Send Telemetry data
 
 /* ESP32 WROOM
 Serial 0 : RX0=3 TX0=1 (USB)
@@ -145,7 +151,7 @@ void init_cars(uint8_t numcars)
 /*
  *
  */
-void draw_ramp(OneTrack *_tck)
+void draw_ramp(TheTrack *_tck)
 {
   // debug("draw_ramp");
   struct ConfigurationRamp const *r = &_tck->cfg.ramp;
@@ -168,7 +174,7 @@ void draw_ramp(OneTrack *_tck)
 /*
  *
  */
-void draw_box_entrypoint(OneTrack *_tck)
+void draw_box_entrypoint(TheTrack *_tck)
 {
   debug("draw_box_entrypoint");
   struct ConfigurationTrack const *cfg = &_tck->cfg.track;
@@ -178,7 +184,7 @@ void draw_box_entrypoint(OneTrack *_tck)
   track.SetPixelColor(out, COLOR_BOXMARKS);
 }
 
-void strip_clear(OneTrack *tck, bool show_settings)
+void strip_clear(TheTrack *tck, bool show_settings)
 {
   // debug("strip_clear");
   struct ConfigurationTrack const *cfg = &tck->cfg.track;
@@ -272,8 +278,8 @@ void setup()
   race.cfg.nrepeat = tck.cfg.race.nrepeat;       // always 1 for Standalone mode
   race.cfg.finishline = tck.cfg.race.finishline; // always true for Standalone mode
 
-  startRace_delay.start(0); // first race starts with no delay
-  race.phase = READY;       // READY is the first status for Standalone mode
+  startRaceDelay.start(0); // first race starts with no delay
+  race.phase = READY;      // READY is the first status for Standalone mode
 
   //  last_activity_millis = millis();
 
@@ -299,9 +305,9 @@ bool ready_for_demo_mode(void)
   debug("ready_for_demo_mode");
   if (players_actity(race.numcars))
   {
-    demoMode_delay.start((unsigned long)INACTIVITY_TIMEOUT_DELAY * 1000); // Reset timeout when somebody is using controllers
+    demoModeDelay.start((unsigned long)INACTIVITY_TIMEOUT_DELAY * 1000); // Reset timeout when somebody is using controllers
   }
-  return (demoMode_delay.elapsed());
+  return (demoModeDelay.elapsed());
 }
 
 /**
@@ -939,8 +945,8 @@ void sendResponse(ack_t *ack)
 void countdownReset()
 {
   debug("countdownReset");
-  countdown_phase = 1;
-  countdown_new_phase = true;
+  countdownCurrentPhase = 1;
+  countdownNewPhase = true;
 }
 
 void send_phase(int phase)
@@ -956,64 +962,64 @@ void send_phase(int phase)
 boolean start_race_done()
 {
   debug("start_race_done");
-  if (countdown_new_phase)
+  if (countdownNewPhase)
   {
     debug("start_race_done: new phase");
-    countdown_new_phase = false;
-    startRace_delay.start(CONTDOWN_PHASE_DURATION);
+    countdownNewPhase = false;
+    startRaceDelay.start(CONTDOWN_PHASE_DURATION);
     strip_clear(&tck, true);
-    switch (countdown_phase)
+    switch (countdownCurrentPhase)
     {
     case 1:
       debug("start_race_done: 1");
-      audio.PlayCountdown((countdown)countdown_phase);
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
       break;
     case 2:
       debug("start_race_done: 2");
-      audio.PlayCountdown((countdown)countdown_phase);
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
       track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
       break;
     case 3:
       debug("start_race_done: 3");
-      audio.PlayCountdown((countdown)countdown_phase);
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
       break;
     case 4:
       debug("start_race_done: 4");
-      startRace_delay.start(CONTDOWN_STARTSOUND_DURATION);
-      audio.PlayCountdown((countdown)countdown_phase);
+      startRaceDelay.start(CONTDOWN_STARTSOUND_DURATION);
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
       track.SetPixelColor(0, track.Color(255, 255, 255));
       break;
     case 5:
       debug("start_race_done: 5");
-      audio.PlayCountdown((countdown)countdown_phase);
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
       countdownReset(); // reset for next countdown
       return (true);
     }
     track.Show();
   }
-  if (startRace_delay.elapsed())
+  if (startRaceDelay.elapsed())
   {
     debug("start_race_done: elapsed");
     audio.SoundOff();
-    countdown_new_phase = true;
-    countdown_phase++;
+    countdownNewPhase = true;
+    countdownCurrentPhase++;
   }
   return (false);
 }
 
-void draw_coin(OneTrack *tck)
+void draw_coin(TheTrack *tck)
 {
   debug("draw_coin");
   struct ConfigurationTrack const *cfg = &tck->cfg.track;
   track.SetPixelColor(1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin, COLOR_COIN);
 }
 
-void draw_winner(OneTrack *tck, uint32_t color)
+void draw_winner(TheTrack *tck, uint32_t color)
 {
   debug("draw_winner");
   struct ConfigurationTrack const *cfg = &tck->cfg.track;
@@ -1027,7 +1033,7 @@ void draw_winner(OneTrack *tck, uint32_t color)
   delay(WINNER_SHOW_DURATION);
 }
 
-void draw_car_tail(OneTrack *tck, OneCar *car)
+void draw_car_tail(TheTrack *tck, OneCar *car)
 {
   debug("draw_car_tail");
   struct ConfigurationTrack const *cfg = &tck->cfg.track;
@@ -1045,13 +1051,13 @@ void draw_car_tail(OneTrack *tck, OneCar *car)
   }
 }
 
-void sound_winner(OneTrack *tck, byte winner)
+void sound_winner(TheTrack *tck, byte winner)
 {
   //  debug("sound_winner");
   audio.PlayWinnerMusic();
 }
 
-void draw_car(OneTrack *tck, OneCar *car)
+void draw_car(TheTrack *tck, OneCar *car)
 {
   debug("draw_car");
   struct ConfigurationTrack const *cfg = &tck->cfg.track;
@@ -1254,7 +1260,7 @@ void loop()
     { // Exit_Config command received
       race.newcfg = false;
       countdownReset();
-      startRace_delay.start(0);
+      startRaceDelay.start(0);
       // for Standalone mode, gets into READY status
       // for Network races gets into CONFIGURATION OK status
       race.phase = (race.network_race == false) ? READY : CONFIG_OK;
@@ -1287,7 +1293,7 @@ void loop()
       if (param_option_is_active(&tck.cfg, AUTOSTART_MODE_OPTION) || race.demo_mode)
       { // Autostart parameters ON
         debug("PHASE: ready / Autostart");
-        if (startRace_delay.elapsed())
+        if (startRaceDelay.elapsed())
           goOn = true; // Automatically start Countdown after a defined Delay
                        // Note: In DemoMode always use AutoStart
       }
@@ -1408,10 +1414,10 @@ void loop()
     audio.PlayMotorSound(int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
 
     // Send Telemetry data
-    if (telemetry_delay.elapsed())
+    if (telemetryDelay.elapsed())
     {
       print_cars_positions(cars);
-      telemetry_delay.start(TELEMETRY_DELAY);
+      telemetryDelay.start(TELEMETRY_DELAY);
     }
     // ----------------
   }
@@ -1427,7 +1433,7 @@ void loop()
     strip_clear(&tck, false);
     track.Show();
 
-    startRace_delay.start(NEWRACE_DELAY);
+    startRaceDelay.start(NEWRACE_DELAY);
 
     // for Standalone mode, gets into READY status
     // for Network races gets into IDLE statue

@@ -1,17 +1,14 @@
-#ifndef _OLR_LIB_h
-#define _OLR_LIB_h
+#ifndef CAR_h
+#define CAR_h
 
-#ifdef __cplusplus
-
-extern "C"
-{
-#endif
-
-#include <Arduino.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "olr-param.h"
+#include "Arduino.h"
 #include "EnumsAndConstants.h"
+#include "olr-param.h"
+
+class Cars
+{
+public:
+    Cars();
 
     void car_init(OneCar *car, OneController *ct, uint32_t color);
     void car_updateController(OneCar *car, float controllerSpeed);
@@ -34,8 +31,7 @@ extern "C"
     int battery_configure(TheTrack *tck, int delta, int min, int boost, int active);
     int race_configure(TheTrack *tck, int startline, int nlap, int nrepeat, int finishline);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+private:
+};
 
 #endif

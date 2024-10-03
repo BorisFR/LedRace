@@ -97,7 +97,7 @@ typedef struct
     uint32_t ledtime;
     bool rampactive;
     bool boxactive;
-} OneTrack;
+} TheTrack;
 
 enum carStatus
 {

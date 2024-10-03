@@ -1,7 +1,8 @@
-#include "Arduino.h"
-#include "olr-lib.h"
+#include "Cars.h"
 
-void car_init(OneCar *car, OneController *ct, uint32_t color)
+Cars::Cars() {}
+
+void Cars::car_init(OneCar *car, OneController *ct, uint32_t color)
 {
     car->ct = ct;
     car->color = color;
@@ -13,12 +14,12 @@ void car_init(OneCar *car, OneController *ct, uint32_t color)
     car->charging = 0;
 }
 
-void car_updateController(OneCar *car, float controllerSpeed)
+void Cars::car_updateController(OneCar *car, float controllerSpeed)
 {
     car->speed += controllerSpeed * car->battery / 100;
 }
 
-void update_track(TheTrack *tck, OneCar *car, byte controllerStatus, float acceleration)
+void Cars::update_track(TheTrack *tck, OneCar *car, byte controllerStatus, float acceleration)
 {
     OneController *ct = car->ct;
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
@@ -48,7 +49,7 @@ void update_track(TheTrack *tck, OneCar *car, byte controllerStatus, float accel
         car->nlap++;
 }
 
-void process_aux_track(TheTrack *tck, OneCar *car, float acceleration)
+void Cars::process_aux_track(TheTrack *tck, OneCar *car, float acceleration)
 {
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
     struct ConfigurationBattery const *battery = &tck->cfg.battery;
@@ -68,7 +69,7 @@ void process_aux_track(TheTrack *tck, OneCar *car, float acceleration)
     car->dist_aux += car->speed;
 }
 
-void process_main_track(TheTrack *tck, OneCar *car, byte controllerStatus)
+void Cars::process_main_track(TheTrack *tck, OneCar *car, byte controllerStatus)
 {
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
@@ -131,17 +132,17 @@ void process_main_track(TheTrack *tck, OneCar *car, byte controllerStatus)
     car->dist += car->speed;
 }
 
-void ramp_init(TheTrack *tck)
+void Cars::ramp_init(TheTrack *tck)
 {
     tck->rampactive = true;
 }
 
-bool ramp_isactive(TheTrack *tck)
+bool Cars::ramp_isactive(TheTrack *tck)
 {
     return tck->rampactive;
 }
 
-void car_resetPosition(OneCar *car, bool reset_speed)
+void Cars::car_resetPosition(OneCar *car, bool reset_speed)
 {
 
     car->trackID = TRACK_MAIN;
@@ -154,22 +155,22 @@ void car_resetPosition(OneCar *car, bool reset_speed)
     car->battery = 100; // Todo: propagate car's battery status in relay races !!!
 }
 
-void car_setSpeed(OneCar *car, float speed)
+/*void Cars::car_setSpeed(OneCar *car, float speed)
 {
     car->speed = speed;
-}
+}*/
 
-void box_init(TheTrack *tck)
+void Cars::box_init(TheTrack *tck)
 {
     tck->boxactive = true;
 }
 
-bool box_isactive(TheTrack *tck)
+bool Cars::box_isactive(TheTrack *tck)
 {
     return tck->boxactive;
 }
 
-int tracklen_configure(TheTrack *tck, int nled)
+int Cars::tracklen_configure(TheTrack *tck, int nled)
 {
     struct ConfigurationTrack *cfg = &tck->cfg.track;
     if (nled <= 0)
@@ -178,19 +179,19 @@ int tracklen_configure(TheTrack *tck, int nled)
     return 0;
 }
 
-int autostart_configure(TheTrack *tck, uint8_t autostart)
+int Cars::autostart_configure(TheTrack *tck, uint8_t autostart)
 {
     param_option_set(&tck->cfg, AUTOSTART_MODE_OPTION, (boolean)autostart);
     return 0;
 }
 
-int demo_configure(TheTrack *tck, uint8_t demo)
+int Cars::demo_configure(TheTrack *tck, uint8_t demo)
 {
     param_option_set(&tck->cfg, DEMO_MODE_OPTION, (boolean)demo);
     return 0;
 }
 
-int players_n_configure(TheTrack *tck, uint8_t val)
+int Cars::players_n_configure(TheTrack *tck, uint8_t val)
 {
     switch (val)
     {
@@ -215,7 +216,7 @@ int players_n_configure(TheTrack *tck, uint8_t val)
     return (0);
 }
 
-int boxlen_configure(TheTrack *tck, int box_len, int boxalwaysOn)
+int Cars::boxlen_configure(TheTrack *tck, int box_len, int boxalwaysOn)
 {
     struct ConfigurationTrack *cfg = &tck->cfg.track;
 
@@ -232,7 +233,7 @@ int boxlen_configure(TheTrack *tck, int box_len, int boxalwaysOn)
     return 0;
 }
 
-int physic_configure(TheTrack *tck, float kgp, float kfp)
+int Cars::physic_configure(TheTrack *tck, float kgp, float kfp)
 {
     struct ConfigurationTrack *cfg = &tck->cfg.track;
 
@@ -245,7 +246,7 @@ int physic_configure(TheTrack *tck, float kgp, float kfp)
     return (0);
 }
 
-int track_configure(TheTrack *tck, int init_box)
+int Cars::track_configure(TheTrack *tck, int init_box)
 {
     struct ConfigurationTrack *cfg = &tck->cfg.track;
 
@@ -257,7 +258,7 @@ int track_configure(TheTrack *tck, int init_box)
     return 0;
 }
 
-int ramp_configure(TheTrack *tck, int init, int center, int end, uint8_t high, int alwaysOn)
+int Cars::ramp_configure(TheTrack *tck, int init, int center, int end, uint8_t high, int alwaysOn)
 {
     struct ConfigurationRamp *ramp = &tck->cfg.ramp;
 
@@ -284,7 +285,7 @@ int ramp_configure(TheTrack *tck, int init, int center, int end, uint8_t high, i
     return 0;
 }
 
-int battery_configure(TheTrack *tck, int delta, int min, int boost, int active)
+int Cars::battery_configure(TheTrack *tck, int delta, int min, int boost, int active)
 {
     struct ConfigurationBattery *battery = &tck->cfg.battery;
 
@@ -296,7 +297,7 @@ int battery_configure(TheTrack *tck, int delta, int min, int boost, int active)
     return 0;
 }
 
-int race_configure(TheTrack *tck, int startline, int nlap, int nrepeat, int finishline)
+int Cars::race_configure(TheTrack *tck, int startline, int nlap, int nrepeat, int finishline)
 {
     struct cfgrace *race = &tck->cfg.race;
 

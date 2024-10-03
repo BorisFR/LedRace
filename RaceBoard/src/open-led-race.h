@@ -76,7 +76,7 @@ extern "C"
         bool demo_mode_on_received;
         bool demo_mode_off_received;
         bool network_race;
-    } race_t;
+    } TheRace;
 
     /*  ----------- Function prototypes ------------------- */
 
@@ -87,7 +87,7 @@ extern "C"
     void printdebug(const char *msg, int errlevel);
     void print_cars_positions(OneCar *cars);
     void run_racecycle(void);
-    void draw_winner(OneTrack *tck, uint32_t color);
+    void draw_winner(TheTrack *tck, uint32_t color);
 
 #ifdef __cplusplus
 } // extern "C"
