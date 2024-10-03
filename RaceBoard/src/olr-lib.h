@@ -10,21 +10,20 @@ extern "C"
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "olr-controller.h"
 #include "olr-param.h"
 #include "EnumsAndConstants.h"
 
     void car_init(OneCar *car, OneController *ct, uint32_t color);
 
-    void car_updateController(OneCar *car);
+    void car_updateController(OneCar *car, float controllerSpeed);
 
     void car_resetPosition(OneCar *car, bool reset_speed);
 
-    void update_track(OneTrack *tck, OneCar *car);
+    void update_track(OneTrack *tck, OneCar *car, byte controllerStatus, float acceleration);
 
-    void process_main_track(OneTrack *tck, OneCar *car);
+    void process_main_track(OneTrack *tck, OneCar *car, byte controllerStatus);
 
-    void process_aux_track(OneTrack *tck, OneCar *car);
+    void process_aux_track(OneTrack *tck, OneCar *car, float acceleration);
 
     void box_init(OneTrack *tck);
 

@@ -19,6 +19,9 @@
 	],
 	"settings": {
 		"platformio-ide.autoOpenPlatformIOIniFile": false,
-		"platformio-ide.activateProjectOnTextEditorChange": true
+		"platformio-ide.activateProjectOnTextEditorChange": true,
+		"files.associations": {
+			"olr-controller.h": "c"
+		}
 	}
 }

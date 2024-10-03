@@ -1,26 +1,9 @@
-#include "olr-controller.h"
-enum
+#include "Controller.h"
+
+Controller::Controller() {}
+
+void Controller::Setup()
 {
-    DELTA_ANALOG = 5,
-};
-
-int DIGITAL_CTRL[MAX_PLAYER_NUMBER];
-
-static float const ACEL = 0.15;
-// TODO: 0.2;
-
-void controller_setup(void)
-{
-
-    /***
-    if( DIGITAL_MODE == false ){
-      pinMode(PIN_VCC_ADC1, OUTPUT);
-      pinMode(PIN_VCC_ADC2, OUTPUT);
-      digitalWrite(PIN_VCC_ADC1, HIGH);
-      digitalWrite(PIN_VCC_ADC2, HIGH);
-    }
-    ***/
-
     DIGITAL_CTRL[CTRL_1] = DIG_CTRL_1_PIN;
     DIGITAL_CTRL[CTRL_2] = DIG_CTRL_2_PIN;
     DIGITAL_CTRL[CTRL_3] = DIG_CTRL_3_PIN;
@@ -32,14 +15,14 @@ void controller_setup(void)
     pinMode(DIG_CTRL_4_PIN, INPUT_PULLUP);
 }
 
-void controller_init(OneController *ct, enum ControllerType mode, int pin)
+void Controller::controller_init(OneController *ct, enum ControllerType mode, byte carNumber)
 {
     ct->mode = mode;
-    ct->pin = pin;
+    ct->pin = DIGITAL_CTRL[carNumber];
     ct->delta_analog = DELTA_ANALOG;
 }
 
-byte controller_getStatus(OneController *ct)
+byte Controller::controller_getStatus(OneController *ct)
 {
 
     if (ct->mode == DIGITAL_MODE)
@@ -70,13 +53,13 @@ byte controller_getStatus(OneController *ct)
     return 0;
 }
 
-float controller_getSpeed(OneController *ct)
+float Controller::controller_getSpeed(OneController *ct)
 {
     float speed = 0.0;
     if ((ct->flag_sw == 1) && (controller_getStatus(ct) == 0))
     {
         ct->flag_sw = 0;
-        speed = ACEL;
+        speed = CAR_ACCELERATION;
     }
 
     if ((ct->flag_sw == 0) && (controller_getStatus(ct) == 1))
@@ -86,12 +69,12 @@ float controller_getSpeed(OneController *ct)
     return speed;
 }
 
-float controller_getAccel(void)
+float Controller::controller_getAccel(void)
 {
-    return ACEL;
+    return CAR_ACCELERATION;
 }
 
-bool controller_isActive(int pin)
+bool Controller::controller_isActive(byte carNumber)
 {
-    return !digitalRead(pin);
+    return !digitalRead(DIGITAL_CTRL[carNumber]);
 }

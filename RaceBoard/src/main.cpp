@@ -25,6 +25,12 @@ static uint32_t car_color[] = {
     CAR_COLOR_3,
     CAR_COLOR_4};
 
+/* ***************************************************************************
+  Led Strip stuff
+*************************************************************************** */
+#include "Controller.h"
+Controller controller = Controller();
+
 enum internal_setup
 {
   REC_COMMAND_BUFLEN = 32, // received command buffer size
@@ -44,7 +50,6 @@ enum internal_setup
 
 #include <EEPROM.h>
 #include "olr-lib.h"
-#include "olr-controller.h"
 #include "olr-param.h"
 #include "SoftTimer.h"
 #include "SerialCommand.h"
@@ -120,7 +125,8 @@ void set_controllers_mode(uint8_t numctrl, uint8_t mode)
   debug("set_controllers_mode: " + String(numctrl) + "/" + String(mode));
   for (uint8_t i = 0; i < numctrl; ++i)
   {
-    controller_init(&switchs[i], static_cast<ControllerType>(mode), DIGITAL_CTRL[i]);
+    // controller.controller_init(&switchs[i], static_cast<ControllerType>(mode), DIGITAL_CTRL[i]);
+    controller.controller_init(&switchs[i], static_cast<ControllerType>(mode), i);
   }
 }
 
@@ -201,7 +207,7 @@ void setup()
   debug("ADIMAKER Led Race");
   randomSeed(analogRead(A6) + analogRead(A7));
 
-  controller_setup();
+  controller.Setup();
   param_load(&tck.cfg);
 
   track.Setup();
@@ -210,11 +216,11 @@ void setup()
   race.numcars = 2;
 
   // Calculate actual players number
-  if (controller_isActive(DIGITAL_CTRL[CTRL_3]) || param_option_is_active(&tck.cfg, PLAYER_3_OPTION) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION))
+  if (controller.controller_isActive(CTRL_3) || param_option_is_active(&tck.cfg, PLAYER_3_OPTION) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION))
   {
     ++race.numcars;
   }
-  if (controller_isActive(DIGITAL_CTRL[CTRL_4]) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION))
+  if (controller.controller_isActive(CTRL_4) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION))
   {
     ++race.numcars;
   }
@@ -234,7 +240,7 @@ void setup()
   strip_clear(&tck, false);
 
   // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
-  if (controller_isActive(DIGITAL_CTRL[CTRL_2]) || param_option_is_active(&tck.cfg, BOX_MODE_OPTION))
+  if (controller.controller_isActive(CTRL_2) || param_option_is_active(&tck.cfg, BOX_MODE_OPTION))
   { // push switch 2 on reset for activate boxes (pit lane)
     box_init(&tck);
     track_configure(&tck, tck.cfg.track.nled_total - tck.cfg.track.box_len);
@@ -245,13 +251,13 @@ void setup()
     track_configure(&tck, 0);
   }
 
-  if (controller_isActive(DIGITAL_CTRL[CTRL_1]) || param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION))
+  if (controller.controller_isActive(CTRL_1) || param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION))
   { // push switch 1 on reset for activate physics
     ramp_init(&tck);
     draw_ramp(&tck);
     track.Show();
     delay(2000);
-    if (controller_isActive(DIGITAL_CTRL[CTRL_1]))
+    if (controller.controller_isActive(CTRL_1))
     { // retain push switch  on reset for activate FX sound
       audio.MotorSound(true);
     }
@@ -279,7 +285,7 @@ bool players_actity(uint8_t numcars)
   debug("players_actity: " + String(numcars));
   for (uint8_t i = 0; i < numcars; ++i)
   {
-    if (controller_isActive(DIGITAL_CTRL[i]))
+    if (controller.controller_isActive(i))
       return (true);
   }
   return (false);
@@ -1111,8 +1117,8 @@ void run_racecycle(OneCar *car, int caridx)
 
   if (car->st == CAR_RACING)
   {
-    update_track(&tck, car);
-    car_updateController(car);
+    update_track(&tck, car, controller.controller_getStatus(car->ct), controller.controller_getAccel());
+    car_updateController(car, controller.controller_getSpeed(car->ct));
     draw_car(&tck, car);
 
     if (car->nlap == race.cfg.nlap && !car->leaving && car->dist > (cfg->nled_main * car->nlap - race.circ.outtunnel))
@@ -1293,7 +1299,7 @@ void loop()
         for (int i = 0; i < race.numcars; ++i)
         {
           // debug("PHASE: ready / Not Autostart : numcars=" + String(i));
-          if (controller_getStatus(cars[i].ct) == false)
+          if (controller.controller_getStatus(cars[i].ct) == false)
           {
             // debug("PHASE: ready / Not Autostart => false");
             track.SetPixelColor(i, cars[i].color);

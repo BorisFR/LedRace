@@ -1,6 +1,8 @@
 #ifndef ENUMS_AND_CONSTANTS_h
 #define ENUMS_AND_CONSTANTS_h
 
+#include "Arduino.h"
+
 // Position (bit) into the ConfigurationParameter.option byte for On|Off settings
 // Used in param_option_set()/param_option_is_active() calls
 enum cfgparam_option_bit

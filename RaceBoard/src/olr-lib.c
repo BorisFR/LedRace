@@ -13,17 +13,17 @@ void car_init(OneCar *car, OneController *ct, uint32_t color)
     car->charging = 0;
 }
 
-void car_updateController(OneCar *car)
+void car_updateController(OneCar *car, float controllerSpeed)
 {
-    car->speed += controller_getSpeed(car->ct) * car->battery / 100;
+    car->speed += controllerSpeed * car->battery / 100;
 }
 
-void update_track(OneTrack *tck, OneCar *car)
+void update_track(OneTrack *tck, OneCar *car, byte controllerStatus, float acceleration)
 {
     OneController *ct = car->ct;
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
-    if (car->trackID == TRACK_MAIN && (int)car->dist % cfg->nled_main == (cfg->init_aux - (cfg->nled_aux)) && controller_getStatus(ct) == 0)
+    if (car->trackID == TRACK_MAIN && (int)car->dist % cfg->nled_main == (cfg->init_aux - (cfg->nled_aux)) && controllerStatus == 0)
     { // change track by switch
         //  &&  (car->speed <= SPD_MIN_TRACK_AUX )) {   //change track by low speed
 
@@ -39,16 +39,16 @@ void update_track(OneTrack *tck, OneCar *car)
 
     /* Update car position in the current track */
     if (car->trackID == TRACK_AUX)
-        process_aux_track(tck, car);
+        process_aux_track(tck, car, acceleration);
     else if (car->trackID == TRACK_MAIN)
-        process_main_track(tck, car);
+        process_main_track(tck, car, controllerStatus);
 
     /* Update car lap */
     if (car->dist > (cfg->nled_main * car->nlap - 1))
         car->nlap++;
 }
 
-void process_aux_track(OneTrack *tck, OneCar *car)
+void process_aux_track(OneTrack *tck, OneCar *car, float acceleration)
 {
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
     struct ConfigurationBattery const *battery = &tck->cfg.battery;
@@ -56,9 +56,9 @@ void process_aux_track(OneTrack *tck, OneCar *car)
     // TODO: new line
     car->speed = 0.9 * car->speed;
 
-    if ((int)car->dist_aux == tck->ledcoin && car->speed <= controller_getAccel())
+    if ((int)car->dist_aux == tck->ledcoin && car->speed <= acceleration)
     {
-        car->speed = controller_getAccel() * (1.0 * battery->speed_boost_scaler);
+        car->speed = acceleration * (1.0 * battery->speed_boost_scaler);
 
         tck->ledcoin = COIN_RESET;
         car->battery = 100;
@@ -68,7 +68,7 @@ void process_aux_track(OneTrack *tck, OneCar *car)
     car->dist_aux += car->speed;
 }
 
-void process_main_track(OneTrack *tck, OneCar *car)
+void process_main_track(OneTrack *tck, OneCar *car, byte controllerStatus)
 {
     struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
@@ -88,8 +88,8 @@ void process_main_track(OneTrack *tck, OneCar *car)
     if (param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION))
     { // Battery Mode ON
         struct ConfigurationBattery const *battery = &tck->cfg.battery;
-        if (cfg->nled_main - (int)(car->dist) % cfg->nled_main == tck->ledcoin && controller_getStatus(car->ct) == 0 // charge battery by push switch over coin
-                                                                                                                     //&& car->speed <= controller_getAccel()
+        if (cfg->nled_main - (int)(car->dist) % cfg->nled_main == tck->ledcoin && controllerStatus == 0 // charge battery by push switch over coin
+                                                                                                        //&& car->speed <= controller_getAccel()
         )
         {
             car->charging = 1;

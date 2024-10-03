@@ -6,6 +6,8 @@
 /// LED number in the Strip used as a Semaphore (Countdown phase)
 #define LED_SEMAPHORE 2
 
+#define CAR_ACCELERATION 0.15
+
 // Colors setup (Racing lights, Ramp, etc)
 
 #define CAR_COLOR_1 track.Color(255, 0, 0)
