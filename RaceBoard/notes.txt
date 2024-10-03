@@ -1,0 +1,20 @@
+
+RAM:   [          ]   4.4% (used 23364 bytes from 532480 bytes)
+Flash: [==        ]  24.2% (used 317169 bytes from 1310720 bytes)
+
+
+* ADIMAKER Led Race
+DEFAULT->EEPROM-v):9
+* Neopixel length: 64
+* set_controllers_mode: 2/1
+* init_cars: 2
+* SETUP: OK
+
+
+* PHASE: ready / for countdown
+R4
+* PHASE: countdown
+* start_race_done
+* start_race_done: new phase
+
+
