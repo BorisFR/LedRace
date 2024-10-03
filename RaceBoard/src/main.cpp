@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Configuration.h"
+#include "HardwareConfiguration.h"
 
 /* ***************************************************************************
   Audio stuff
@@ -7,7 +7,37 @@
 #include "Audio.h"
 Audio audio = Audio();
 
-#include "TrackConfiguration.h"
+/* ***************************************************************************
+  Game stuff
+*************************************************************************** */
+#include "GameConfiguration.h"
+
+/* ***************************************************************************
+  Led Strip stuff
+*************************************************************************** */
+#include "LedStrip.h"
+LedStrip track = LedStrip();
+
+static uint32_t car_color[] = {
+    CAR_COLOR_1,
+    CAR_COLOR_2,
+    CAR_COLOR_3,
+    CAR_COLOR_4};
+
+enum internal_setup
+{
+  REC_COMMAND_BUFLEN = 32, // received command buffer size
+                           // At the moment, the largest received command is RAMP CONFIGURATION (A)
+                           //    ex: A1400,1430,1460,12,0[EOC] (for a 1500 LED strip)
+                           // 21 CHAR
+
+  TX_COMMAND_BUFLEN = 48, // send command buffer size
+                          // At the moment, the largest send command is Q
+                          //    ex: QTK:1500,1500,0,-1,60,0,0.006,0.015,1[EOC] (for a 1500 LED strip)
+                          // 37 CHAR
+
+  MAX_PLAYERS = MAX_PLAYER_NUMBER, // DO NOT Change: Current software supports max 4 controllers
+};
 
 #include "open-led-race.h"
 
@@ -38,9 +68,6 @@ SoftTimer startRace_delay = SoftTimer();  // Autostart, Countdown
 SoftTimer demoMode_delay = SoftTimer();   // Activate Demo Mode on inactivity
 SoftTimer telemetry_delay = SoftTimer(0); // Send Telemetry data
 
-static byte s_motor = 0;
-static int t_beep = 0;
-static int f_beep = 0;
 /* ESP32 WROOM
 Serial 0 : RX0=3 TX0=1 (USB)
 Serial 1 : RX1=9 TX1=10
@@ -49,18 +76,6 @@ Serial 2 : RX2=16 TX2=17
 char cmd[REC_COMMAND_BUFLEN];                                                                 // Stores command received by ReadSerialComand()
 SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial, &Serial2); // get complete command from serial
 char txbuff[TX_COMMAND_BUFLEN];
-
-// #include <FastLED.h>
-// FastLED_NeoPixel<MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800> track; // <- The new FastLED_NeoPixel object
-
-#include "Track.h"
-Track track = Track();
-
-static uint32_t car_color[] = {
-    COLOR1,
-    COLOR2,
-    COLOR3,
-    COLOR4};
 
 void debug(String text)
 {
@@ -89,7 +104,7 @@ void param_load(struct cfgparam *cfg)
     // changed to force the code enter here.
     // The previous values stored in EEPROM are invalid and need to be reset-to-default and
     // stored in the EEPROM again with the new "structure"
-    param_setdefault(&tck.cfg);
+    param_setdefault(&tck.cfg, track.NumberOfPixels());
     EEPROM.put(eeadrInfo, tck.cfg);
     sprintf(txbuff, "%s:%d%c", "DEFAULT->EEPROM-v)", tck.cfg.ver, EOL);
     serialCommand.sendCommand(txbuff);
@@ -125,7 +140,7 @@ void init_cars(uint8_t numcars)
  */
 void draw_ramp(track_t *_tck)
 {
-  debug("draw_ramp");
+  // debug("draw_ramp");
   struct cfgramp const *r = &_tck->cfg.ramp;
   byte dist = 0;
   byte intensity = 0;
@@ -133,13 +148,13 @@ void draw_ramp(track_t *_tck)
   {
     dist = r->center - r->init;
     intensity = (32 * (i - r->init)) / dist;
-    track.setPixelColor(i, track.Color(intensity, 0, intensity));
+    track.SetPixelColor(i, track.Color(intensity, 0, intensity));
   }
   for (int i = r->center; i <= r->end; ++i)
   {
     dist = r->end - r->center;
     intensity = (32 * (r->end - i)) / dist;
-    track.setPixelColor(i, track.Color(intensity, 0, intensity));
+    track.SetPixelColor(i, track.Color(intensity, 0, intensity));
   }
 }
 
@@ -152,8 +167,8 @@ void draw_box_entrypoint(track_t *_tck)
   struct cfgtrack const *cfg = &_tck->cfg.track;
   int out = cfg->nled_total - cfg->box_len; // Pit lane exit (race start)
   int in = out - cfg->box_len;              // Pit lane Entrance
-  track.setPixelColor(in, COLOR_BOXMARKS);
-  track.setPixelColor(out, COLOR_BOXMARKS);
+  track.SetPixelColor(in, COLOR_BOXMARKS);
+  track.SetPixelColor(out, COLOR_BOXMARKS);
 }
 
 void strip_clear(track_t *tck, bool show_settings)
@@ -161,10 +176,10 @@ void strip_clear(track_t *tck, bool show_settings)
   // debug("strip_clear");
   struct cfgtrack const *cfg = &tck->cfg.track;
   for (int i = 0; i < cfg->nled_main; i++)
-    track.setPixelColor(i, track.Color(0, 0, 0));
+    track.SetPixelColor(i, track.Color(0, 0, 0));
 
   for (int i = 0; i < cfg->nled_aux; i++)
-    track.setPixelColor(cfg->nled_main + i, track.Color(0, 0, 0));
+    track.SetPixelColor(cfg->nled_main + i, track.Color(0, 0, 0));
 
   if (show_settings)
   {
@@ -174,17 +189,6 @@ void strip_clear(track_t *tck, bool show_settings)
       draw_box_entrypoint(tck);
   }
   // debug("strip_clear OK");
-}
-
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait)
-{
-  for (uint16_t i = 0; i < track.numPixels(); i++)
-  {
-    track.setPixelColor(i, c);
-    track.show();
-    delay(wait);
-  }
 }
 
 void setup()
@@ -199,15 +203,7 @@ void setup()
   controller_setup();
   param_load(&tck.cfg);
 
-  // test LED
-  track.begin();
-  // track.setBrightness(50);
-  // track.show();
-
-  debug("Neopixel length: " + String(track.numPixels())); // Initialize all pixels to 'off'
-  // colorWipe(track.Color(255, 0, 0), 50);                  // Red
-  // colorWipe(track.Color(0, 255, 0), 50);                  // Green
-  // colorWipe(track.Color(0, 0, 255), 50);                  // Blue
+  track.Setup();
 
   // First 2 controllers always active (Red, Green)
   race.numcars = 2;
@@ -234,7 +230,6 @@ void setup()
   // Initialize car for every player
   init_cars(race.numcars);
 
-  track.begin();
   strip_clear(&tck, false);
 
   // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
@@ -253,13 +248,11 @@ void setup()
   { // push switch 1 on reset for activate physics
     ramp_init(&tck);
     draw_ramp(&tck);
-    track.show();
+    track.Show();
     delay(2000);
     if (controller_isActive(DIGITAL_CTRL[CTRL_1]))
     { // retain push switch  on reset for activate FX sound
-      s_motor = 1;
-      audio.ChangeAudioMode();
-      // tone(PIN_AUDIO, 100);
+      audio.MotorSound(true);
     }
   }
 
@@ -344,9 +337,8 @@ void enter_configuration_mode()
 {
   debug("enter_configuration_mode");
   audio.SoundOff();
-  // noTone(PIN_AUDIO);
   strip_clear(&tck, false);
-  track.show();
+  track.Show();
 }
 
 /*
@@ -357,7 +349,7 @@ void show_cfgpars_onstrip()
 {
   debug("show_cfgpars_onstrip");
   strip_clear(&tck, true);
-  track.show();
+  track.Show();
 }
 
 /*
@@ -790,7 +782,7 @@ ack_t manageSerialCommand()
   case 'D': // Load Default Parameters and store them in from EEPROM
   {
     ack.type = cmd[0];
-    param_setdefault(&tck.cfg);
+    param_setdefault(&tck.cfg, track.NumberOfPixels());
     EEPROM.put(eeadrInfo, tck.cfg); // Save immediately
 
     ack.rp = OKK;
@@ -968,46 +960,39 @@ boolean start_race_done()
     case 1:
       debug("start_race_done: 1");
       audio.PlayCountdown((countdown)countdown_phase);
-      // tone(PIN_AUDIO, 400);
-      track.setPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
+      track.SetPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
       break;
     case 2:
       debug("start_race_done: 2");
       audio.PlayCountdown((countdown)countdown_phase);
-      // tone(PIN_AUDIO, 600);
-      track.setPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
-      track.setPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
+      track.SetPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
+      track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
       break;
     case 3:
       debug("start_race_done: 3");
       audio.PlayCountdown((countdown)countdown_phase);
-      // tone(PIN_AUDIO, 1200);
-      track.setPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
-      track.setPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
+      track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
+      track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
       break;
     case 4:
       debug("start_race_done: 4");
       startRace_delay.start(CONTDOWN_STARTSOUND_DURATION);
       audio.PlayCountdown((countdown)countdown_phase);
-      // tone(PIN_AUDIO, 880);
-      track.setPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
-      track.setPixelColor(0, track.Color(255, 255, 255));
+      track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
+      track.SetPixelColor(0, track.Color(255, 255, 255));
       break;
     case 5:
       debug("start_race_done: 5");
       audio.PlayCountdown((countdown)countdown_phase);
-      // audio.SoundOff();
-      //  noTone(PIN_AUDIO);
       countdownReset(); // reset for next countdown
       return (true);
     }
-    track.show();
+    track.Show();
   }
   if (startRace_delay.elapsed())
   {
     debug("start_race_done: elapsed");
     audio.SoundOff();
-    // noTone(PIN_AUDIO);
     countdown_new_phase = true;
     countdown_phase++;
   }
@@ -1018,7 +1003,7 @@ void draw_coin(track_t *tck)
 {
   debug("draw_coin");
   struct cfgtrack const *cfg = &tck->cfg.track;
-  track.setPixelColor(1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin, COLOR_COIN);
+  track.SetPixelColor(1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin, COLOR_COIN);
 }
 
 void draw_winner(track_t *tck, uint32_t color)
@@ -1027,9 +1012,9 @@ void draw_winner(track_t *tck, uint32_t color)
   struct cfgtrack const *cfg = &tck->cfg.track;
   for (int i = 16; i < cfg->nled_main; i = i + (8 * cfg->nled_main / 300))
   {
-    track.setPixelColor(i, color);
-    track.setPixelColor(i - 16, 0);
-    track.show();
+    track.SetPixelColor(i, color);
+    track.SetPixelColor(i - 16, 0);
+    track.Show();
     delay(WINNER_SHOW_DELAY);
   }
   delay(WINNER_SHOW_DURATION);
@@ -1044,11 +1029,11 @@ void draw_car_tail(track_t *tck, car_t *car)
   {
   case TRACK_MAIN:
     for (int i = 0; i <= car->nlap; ++i)
-      track.setPixelColor(((word)car->dist % cfg->nled_main) + i, car->color);
+      track.SetPixelColor(((word)car->dist % cfg->nled_main) + i, car->color);
     break;
   case TRACK_AUX:
     for (int i = 0; i <= car->nlap; ++i)
-      track.setPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);
+      track.SetPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);
     break;
   }
 }
@@ -1056,13 +1041,6 @@ void draw_car_tail(track_t *tck, car_t *car)
 void sound_winner(track_t *tck, byte winner)
 {
   //  debug("sound_winner");
-  //  int const msize = sizeof(win_music) / sizeof(int);
-  //  for (int note = 0; note < msize; note++)
-  //  {
-  //    tone(PIN_AUDIO, win_music[note], 200);
-  //    delay(WINNER_AUDIO_DELAY);
-  //    noTone(PIN_AUDIO);
-  //  }
   audio.PlayWinnerMusic();
 }
 
@@ -1076,7 +1054,7 @@ void draw_car(track_t *tck, car_t *car)
   {
   case TRACK_MAIN:
     for (int i = 0; i <= 1; ++i)
-      track.setPixelColor(((word)car->dist % cfg->nled_main) - i, car->color);
+      track.SetPixelColor(((word)car->dist % cfg->nled_main) - i, car->color);
     //        uint8_t carlenght = car->nlap < 6 ? car->nlap : 6;  // Max cartatail lenght = 7
     //        for(int i=0; i<= carlenght; ++i )
     //          track.setPixelColor( ((word)car->dist % cfg->nled_main) + i, car->color );
@@ -1084,26 +1062,26 @@ void draw_car(track_t *tck, car_t *car)
     { // Battery Mode ON
       if (car->charging == 1)
       {
-        track.setPixelColor(((word)car->dist % cfg->nled_main) - 2, 0x010100 * 50 * (millis() / (201 - 2 * (byte)car->battery) % 2));
+        track.SetPixelColor(((word)car->dist % cfg->nled_main) - 2, 0x010100 * 50 * (millis() / (201 - 2 * (byte)car->battery) % 2));
       }
       else if (car->battery <= battery->min)
         if ((millis() % 100) > 50)
-          track.setPixelColor(((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR);
+          track.SetPixelColor(((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR);
     }
     break;
   case TRACK_AUX:
     for (int i = 0; i <= 1; ++i)
-      track.setPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);
+      track.SetPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);
     if (param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION))
     { // Battery Mode ON
 
       if (car->charging == 1)
       {
-        track.setPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x010100 * 50 * (millis() / (201 - 2 * (byte)car->battery) % 2));
+        track.SetPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x010100 * 50 * (millis() / (201 - 2 * (byte)car->battery) % 2));
       }
       else if (car->battery <= battery->min)
         if ((millis() % 100) > 50)
-          track.setPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR);
+          track.SetPixelColor((word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR);
     }
     break;
   }
@@ -1317,14 +1295,14 @@ void loop()
           if (controller_getStatus(cars[i].ct) == false)
           {
             // debug("PHASE: ready / Not Autostart => false");
-            track.setPixelColor(i, cars[i].color);
+            track.SetPixelColor(i, cars[i].color);
             pstart++;
           }
         }
         // debug("PHASE: ready / Not Autostart / set LED_SEMAPHORE");
-        track.setPixelColor(LED_SEMAPHORE, ((millis() / 5) % 64) * 0x010100);
+        track.SetPixelColor(LED_SEMAPHORE, ((millis() / 5) % 64) * 0x010100);
         // debug("PHASE: ready / Not Autostart / show");
-        track.show();
+        track.Show();
         // if every controller activated -> Ready for Countdown
         if (pstart == race.numcars)
         {
@@ -1419,20 +1397,8 @@ void loop()
       }
     }
 
-    track.show();
-    if (s_motor == 1)
-    {
-      audio.PlayMotorSound(f_beep + int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
-      // tone(PIN_AUDIO, f_beep + int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
-    }
-    if (t_beep > 0)
-    {
-      t_beep--;
-    }
-    else
-    {
-      f_beep = 0;
-    };
+    track.Show();
+    audio.PlayMotorSound(int(cars[0].speed * 440 * 1) + int(cars[1].speed * 440 * 2) + int(cars[2].speed * 440 * 3) + int(cars[3].speed * 440 * 4));
 
     // Send Telemetry data
     if (telemetry_delay.elapsed())
@@ -1448,11 +1414,11 @@ void loop()
   {
     debug("PHASE: complete");
     strip_clear(&tck, false);
-    track.show();
+    track.Show();
     draw_winner(&tck, cars[race.winner].color);
     sound_winner(&tck, race.winner);
     strip_clear(&tck, false);
-    track.show();
+    track.Show();
 
     startRace_delay.start(NEWRACE_DELAY);
 

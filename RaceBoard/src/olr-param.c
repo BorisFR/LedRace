@@ -1,6 +1,6 @@
 #include "olr-param.h"
 
-void param_setdefault(struct cfgparam *cfg)
+void param_setdefault(struct cfgparam *cfg, uint16_t numberOfLeds)
 {
     cfg->ver = CFGPARAM_VER;
 
@@ -28,10 +28,10 @@ void param_setdefault(struct cfgparam *cfg)
     cfg->ramp.high = 4;
     param_option_set(cfg, SLOPE_MODE_OPTION, SLOPE_ALWAYS_ON);
 
-    cfg->track.nled_total = MAXLED; // MAXLED: Total LED number in the racetrack (default:300 -> 5mt, 60LED/mt Strip)
-    cfg->track.nled_main = MAXLED;  // 240 when boxes length = 60
-    cfg->track.nled_aux = 0;        // 60
-    cfg->track.init_aux = -1;       // 239
+    cfg->track.nled_total = numberOfLeds; // NUMBER_OF_LED: Total LED number in the racetrack (default:300 -> 5mt, 60LED/mt Strip)
+    cfg->track.nled_main = numberOfLeds;  // 240 when boxes length = 60
+    cfg->track.nled_aux = 0;              // 60
+    cfg->track.init_aux = -1;             // 239
     cfg->track.box_len = BOXLEN;
     param_option_set(cfg, BOX_MODE_OPTION, BOX_ALWAYS_ON);
 

@@ -17,7 +17,7 @@ enum countdownFrequency
     Countdown3Frequency = 1200,
     Countdown4Frequency = 880,
 };
-enum delays_setup
+enum delaySetup
 {                                      // If you have a custom hardware (i.e not the OLR PCB),
     CONTDOWN_PHASE_DURATION = 1500,    // (mSec)
     CONTDOWN_STARTSOUND_DURATION = 40, // (mSec)

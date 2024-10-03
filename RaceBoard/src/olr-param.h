@@ -11,12 +11,9 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "olr-settings.h"
-
 // Default values loaded on "D" command received (Serial Protocol)
 //////////////////////////////////////////////////////////////////
-#define MAXLED 64 // 300
-#define BOXLEN 10 // 60
+#define BOXLEN 10
 #define NUMLAP 5
 #define BATTERY_MODE false
 #define AUTOSTART_MODE false
@@ -104,7 +101,7 @@ extern "C"
         struct brdinfo info;
     };
 
-    void param_setdefault(struct cfgparam *cfg);
+    void param_setdefault(struct cfgparam *cfg, uint16_t numberOfLeds);
     void param_option_set(struct cfgparam *cfg, uint8_t option, boolean value);
     boolean param_option_is_active(struct cfgparam *cfg, uint8_t option);
 

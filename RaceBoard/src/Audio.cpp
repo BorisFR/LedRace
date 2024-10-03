@@ -1,17 +1,24 @@
 #include "Audio.h"
 
-Audio::Audio() {}
+Audio::Audio() { playMotorSound = false; }
 
 void Audio::SoundOff()
 {
     noTone(PIN_AUDIO);
 }
 
-void Audio::ChangeAudioMode()
+void Audio::MotorSound(bool isActivate)
 {
+    playMotorSound = isActivate;
     tone(PIN_AUDIO, 100);
 }
 
+void Audio::PlayMotorSound(unsigned int frequency)
+{
+    if (!playMotorSound)
+        return;
+    tone(PIN_AUDIO, frequency);
+}
 void Audio::PlayCountdown(countdown phase)
 {
     switch (phase)
@@ -32,11 +39,6 @@ void Audio::PlayCountdown(countdown phase)
         SoundOff();
         break;
     }
-}
-
-void Audio::PlayMotorSound(unsigned int frequency)
-{
-    tone(PIN_AUDIO, frequency);
 }
 
 void Audio::PlayWinnerMusic()

@@ -4,7 +4,7 @@ enum
     DELTA_ANALOG = 5,
 };
 
-int DIGITAL_CTRL[MAX_PLAYERS];
+int DIGITAL_CTRL[MAX_PLAYER_NUMBER];
 
 static float const ACEL = 0.15;
 // TODO: 0.2;

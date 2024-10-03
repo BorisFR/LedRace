@@ -10,11 +10,11 @@ extern "C"
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "Configuration.h"
-#include "olr-settings.h"
+#include "HardwareConfiguration.h"
+#include "GameConfiguration.h"
 
-    extern int DIGITAL_CTRL[MAX_PLAYERS]; // Global Array containig PINs used for the Digital Controllers (ex: Push Buttons)
-    // int DIGITAL_CTRL[MAX_PLAYERS]; // Global Array containig PINs used for the Digital Controllers (ex: Push Buttons)
+    extern int DIGITAL_CTRL[MAX_PLAYER_NUMBER]; // Global Array containig PINs used for the Digital Controllers (ex: Push Buttons)
+    // int DIGITAL_CTRL[MAX_PLAYER_NUMBER]; // Global Array containig PINs used for the Digital Controllers (ex: Push Buttons)
 
     enum ctr_idx
     {               // Used to access controller by "name" (and not via zero-offset index)
@@ -24,8 +24,8 @@ extern "C"
         CTRL_4
     };
 
-#define PIN_VCC_ADC1 6
-#define PIN_VCC_ADC2 7
+    // #define PIN_VCC_ADC1 6
+    // #define PIN_VCC_ADC2 7
 
     enum ctr_type
     {
