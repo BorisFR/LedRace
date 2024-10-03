@@ -18,4 +18,10 @@
 #define COLOR_BOXMARKS track.Color(64, 64, 0)
 #define WARNING_BLINK_COLOR track.Color(32, 20, 0)
 
+#define SPD_MIN_TRACK_AUX 0.8 // change track by low speed
+// #define BATTERY_DELTA           0.03  // Decrease BATTERY_DELTA on each controller activation - used in charge rate too
+// #define BATTERY_DELTA           3     // unsigned char value [1-254] / will be divided by 100 [0.01-2.54]
+// #define BATTERY_MIN             60    // Battery does not descharge below BATTERY_MIN
+// #define SPEED_BOOST_SCALER      10
+
 #endif

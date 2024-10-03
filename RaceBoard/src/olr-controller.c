@@ -32,14 +32,14 @@ void controller_setup(void)
     pinMode(DIG_CTRL_4_PIN, INPUT_PULLUP);
 }
 
-void controller_init(controller_t *ct, enum ctr_type mode, int pin)
+void controller_init(OneController *ct, enum ControllerType mode, int pin)
 {
     ct->mode = mode;
     ct->pin = pin;
     ct->delta_analog = DELTA_ANALOG;
 }
 
-byte controller_getStatus(controller_t *ct)
+byte controller_getStatus(OneController *ct)
 {
 
     if (ct->mode == DIGITAL_MODE)
@@ -70,7 +70,7 @@ byte controller_getStatus(controller_t *ct)
     return 0;
 }
 
-float controller_getSpeed(controller_t *ct)
+float controller_getSpeed(OneController *ct)
 {
     float speed = 0.0;
     if ((ct->flag_sw == 1) && (controller_getStatus(ct) == 0))

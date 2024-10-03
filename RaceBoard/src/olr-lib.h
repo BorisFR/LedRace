@@ -12,104 +12,47 @@ extern "C"
 #include <stdbool.h>
 #include "olr-controller.h"
 #include "olr-param.h"
+#include "EnumsAndConstants.h"
 
-#define SPD_MIN_TRACK_AUX 0.8 // change track by low speed
-    // #define BATTERY_DELTA           0.03  // Decrease BATTERY_DELTA on each controller activation - used in charge rate too
-    // #define BATTERY_DELTA           3     // unsigned char value [1-254] / will be divided by 100 [0.01-2.54]
-    // #define BATTERY_MIN             60    // Battery does not descharge below BATTERY_MIN
-    // #define SPEED_BOOST_SCALER      10
+    void car_init(OneCar *car, OneController *ct, uint32_t color);
 
-    enum stcoin
-    {
-        COIN_RESET = -2,
-        COIN_WAIT = -1,
-    };
+    void car_updateController(OneCar *car);
 
-    enum
-    {
-        NOT_TRACK = 0,
-        TRACK_MAIN,
-        TRACK_AUX,
-        TRACK_IN,
-        TRACK_OUT,
-        NUM_TRACKS,
-    };
+    void car_resetPosition(OneCar *car, bool reset_speed);
 
-    enum status
-    {
-        CAR_WAITING = 0,
-        CAR_COMING,
-        CAR_ENTER,
-        CAR_RACING,
-        CAR_LEAVING,
-        CAR_GO_OUT,
-        CAR_FINISH
-    };
+    void update_track(OneTrack *tck, OneCar *car);
 
-    typedef struct
-    {
-        controller_t *ct;
-        float speed;
-        float dist;
-        float dist_aux;
-        byte nlap;
-        byte repeats;
-        uint32_t color;
-        uint8_t trackID;
-        enum status st;
-        bool leaving;
-        float battery;
-        bool charging;
-    } car_t;
+    void process_main_track(OneTrack *tck, OneCar *car);
 
-    typedef struct
-    {
-        struct cfgparam cfg;
-        int ledcoin; // LED_SPEED_COIN
-        uint32_t ledtime;
-        bool rampactive;
-        bool boxactive;
-    } track_t;
+    void process_aux_track(OneTrack *tck, OneCar *car);
 
-    void car_init(car_t *car, controller_t *ct, uint32_t color);
+    void box_init(OneTrack *tck);
 
-    void car_updateController(car_t *car);
+    bool box_isactive(OneTrack *tck);
 
-    void car_resetPosition(car_t *car, bool reset_speed);
+    int tracklen_configure(OneTrack *tck, int nled);
 
-    void update_track(track_t *tck, car_t *car);
+    int autostart_configure(OneTrack *tck, uint8_t autostart);
 
-    void process_main_track(track_t *tck, car_t *car);
+    int demo_configure(OneTrack *tck, uint8_t demo);
 
-    void process_aux_track(track_t *tck, car_t *car);
+    int players_n_configure(OneTrack *tck, uint8_t val);
 
-    void box_init(track_t *tck);
+    int boxlen_configure(OneTrack *tck, int box_len, int boxalwaysOn);
 
-    bool box_isactive(track_t *tck);
+    int physic_configure(OneTrack *tck, float kgp, float kfp);
 
-    int tracklen_configure(track_t *tck, int nled);
+    int track_configure(OneTrack *tck, int init_box);
 
-    int autostart_configure(track_t *tck, uint8_t autostart);
+    void ramp_init(OneTrack *tck);
 
-    int demo_configure(track_t *tck, uint8_t demo);
+    bool ramp_isactive(OneTrack *tck);
 
-    int players_n_configure(track_t *tck, uint8_t val);
+    int ramp_configure(OneTrack *tck, int init, int center, int end, uint8_t high, int alwaysOn);
 
-    int boxlen_configure(track_t *tck, int box_len, int boxalwaysOn);
+    int battery_configure(OneTrack *tck, int delta, int min, int boost, int active);
 
-    int physic_configure(track_t *tck, float kgp, float kfp);
-
-    int track_configure(track_t *tck, int init_box);
-
-    void ramp_init(track_t *tck);
-
-    bool ramp_isactive(track_t *tck);
-
-    int ramp_configure(track_t *tck, int init, int center, int end, uint8_t high, int alwaysOn);
-
-    int battery_configure(track_t *tck, int delta, int min, int boost, int active);
-
-    int race_configure(track_t *tck, int startline, int nlap, int nrepeat, int finishline);
+    int race_configure(OneTrack *tck, int startline, int nlap, int nrepeat, int finishline);
 
 #ifdef __cplusplus
 } // extern "C"

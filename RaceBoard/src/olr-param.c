@@ -1,6 +1,6 @@
 #include "olr-param.h"
 
-void param_setdefault(struct cfgparam *cfg, uint16_t numberOfLeds)
+void param_setdefault(struct ConfigurationParameter *cfg, uint16_t numberOfLeds)
 {
     cfg->ver = CFGPARAM_VER;
 
@@ -46,11 +46,11 @@ void param_setdefault(struct cfgparam *cfg, uint16_t numberOfLeds)
     strcpy(cfg->info.uid, "ADIMAKER");
 }
 
-void param_option_set(struct cfgparam *cfg, uint8_t option, boolean value)
+void param_option_set(struct ConfigurationParameter *cfg, uint8_t option, boolean value)
 {
     bitWrite(cfg->option, option, value);
 }
-boolean param_option_is_active(struct cfgparam *cfg, uint8_t option)
+boolean param_option_is_active(struct ConfigurationParameter *cfg, uint8_t option)
 {
     return (bitRead(cfg->option, option));
 }

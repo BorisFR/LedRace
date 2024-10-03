@@ -66,7 +66,7 @@ extern "C"
 
     typedef struct race
     {
-        cfgrace_t cfg;
+        OneRace cfg;
         cfgcircuit_t circ;
         bool newcfg;
         enum phases phase;
@@ -85,9 +85,9 @@ extern "C"
     ack_t manageSerialCommand();
 
     void printdebug(const char *msg, int errlevel);
-    void print_cars_positions(car_t *cars);
+    void print_cars_positions(OneCar *cars);
     void run_racecycle(void);
-    void draw_winner(track_t *tck, uint32_t color);
+    void draw_winner(OneTrack *tck, uint32_t color);
 
 #ifdef __cplusplus
 } // extern "C"

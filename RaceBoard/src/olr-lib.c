@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "olr-lib.h"
 
-void car_init(car_t *car, controller_t *ct, uint32_t color)
+void car_init(OneCar *car, OneController *ct, uint32_t color)
 {
     car->ct = ct;
     car->color = color;
@@ -13,15 +13,15 @@ void car_init(car_t *car, controller_t *ct, uint32_t color)
     car->charging = 0;
 }
 
-void car_updateController(car_t *car)
+void car_updateController(OneCar *car)
 {
     car->speed += controller_getSpeed(car->ct) * car->battery / 100;
 }
 
-void update_track(track_t *tck, car_t *car)
+void update_track(OneTrack *tck, OneCar *car)
 {
-    controller_t *ct = car->ct;
-    struct cfgtrack const *cfg = &tck->cfg.track;
+    OneController *ct = car->ct;
+    struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
     if (car->trackID == TRACK_MAIN && (int)car->dist % cfg->nled_main == (cfg->init_aux - (cfg->nled_aux)) && controller_getStatus(ct) == 0)
     { // change track by switch
@@ -48,10 +48,10 @@ void update_track(track_t *tck, car_t *car)
         car->nlap++;
 }
 
-void process_aux_track(track_t *tck, car_t *car)
+void process_aux_track(OneTrack *tck, OneCar *car)
 {
-    struct cfgtrack const *cfg = &tck->cfg.track;
-    struct cfgbattery const *battery = &tck->cfg.battery;
+    struct ConfigurationTrack const *cfg = &tck->cfg.track;
+    struct ConfigurationBattery const *battery = &tck->cfg.battery;
 
     // TODO: new line
     car->speed = 0.9 * car->speed;
@@ -68,13 +68,13 @@ void process_aux_track(track_t *tck, car_t *car)
     car->dist_aux += car->speed;
 }
 
-void process_main_track(track_t *tck, car_t *car)
+void process_main_track(OneTrack *tck, OneCar *car)
 {
-    struct cfgtrack const *cfg = &tck->cfg.track;
+    struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
     if (tck->rampactive)
     {
-        struct cfgramp const *r = &tck->cfg.ramp;
+        struct ConfigurationRamp const *r = &tck->cfg.ramp;
         int const pos = (int)car->dist % cfg->nled_main;
         if (pos >= r->init && pos < r->center)
             //    car->speed -= cfg->kg * r->high * ( pos - r->init );
@@ -87,7 +87,7 @@ void process_main_track(track_t *tck, car_t *car)
 
     if (param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION))
     { // Battery Mode ON
-        struct cfgbattery const *battery = &tck->cfg.battery;
+        struct ConfigurationBattery const *battery = &tck->cfg.battery;
         if (cfg->nled_main - (int)(car->dist) % cfg->nled_main == tck->ledcoin && controller_getStatus(car->ct) == 0 // charge battery by push switch over coin
                                                                                                                      //&& car->speed <= controller_getAccel()
         )
@@ -131,17 +131,17 @@ void process_main_track(track_t *tck, car_t *car)
     car->dist += car->speed;
 }
 
-void ramp_init(track_t *tck)
+void ramp_init(OneTrack *tck)
 {
     tck->rampactive = true;
 }
 
-bool ramp_isactive(track_t *tck)
+bool ramp_isactive(OneTrack *tck)
 {
     return tck->rampactive;
 }
 
-void car_resetPosition(car_t *car, bool reset_speed)
+void car_resetPosition(OneCar *car, bool reset_speed)
 {
 
     car->trackID = TRACK_MAIN;
@@ -154,43 +154,43 @@ void car_resetPosition(car_t *car, bool reset_speed)
     car->battery = 100; // Todo: propagate car's battery status in relay races !!!
 }
 
-void car_setSpeed(car_t *car, float speed)
+void car_setSpeed(OneCar *car, float speed)
 {
     car->speed = speed;
 }
 
-void box_init(track_t *tck)
+void box_init(OneTrack *tck)
 {
     tck->boxactive = true;
 }
 
-bool box_isactive(track_t *tck)
+bool box_isactive(OneTrack *tck)
 {
     return tck->boxactive;
 }
 
-int tracklen_configure(track_t *tck, int nled)
+int tracklen_configure(OneTrack *tck, int nled)
 {
-    struct cfgtrack *cfg = &tck->cfg.track;
+    struct ConfigurationTrack *cfg = &tck->cfg.track;
     if (nled <= 0)
         return -1;
     cfg->nled_total = nled;
     return 0;
 }
 
-int autostart_configure(track_t *tck, uint8_t autostart)
+int autostart_configure(OneTrack *tck, uint8_t autostart)
 {
     param_option_set(&tck->cfg, AUTOSTART_MODE_OPTION, (boolean)autostart);
     return 0;
 }
 
-int demo_configure(track_t *tck, uint8_t demo)
+int demo_configure(OneTrack *tck, uint8_t demo)
 {
     param_option_set(&tck->cfg, DEMO_MODE_OPTION, (boolean)demo);
     return 0;
 }
 
-int players_n_configure(track_t *tck, uint8_t val)
+int players_n_configure(OneTrack *tck, uint8_t val)
 {
     switch (val)
     {
@@ -215,9 +215,9 @@ int players_n_configure(track_t *tck, uint8_t val)
     return (0);
 }
 
-int boxlen_configure(track_t *tck, int box_len, int boxalwaysOn)
+int boxlen_configure(OneTrack *tck, int box_len, int boxalwaysOn)
 {
-    struct cfgtrack *cfg = &tck->cfg.track;
+    struct ConfigurationTrack *cfg = &tck->cfg.track;
 
     if (boxalwaysOn != 0 && boxalwaysOn != 1)
         return -1;
@@ -232,9 +232,9 @@ int boxlen_configure(track_t *tck, int box_len, int boxalwaysOn)
     return 0;
 }
 
-int physic_configure(track_t *tck, float kgp, float kfp)
+int physic_configure(OneTrack *tck, float kgp, float kfp)
 {
-    struct cfgtrack *cfg = &tck->cfg.track;
+    struct ConfigurationTrack *cfg = &tck->cfg.track;
 
     if (kgp <= 0.0 || kgp >= 2.0)
         return -1;
@@ -245,9 +245,9 @@ int physic_configure(track_t *tck, float kgp, float kfp)
     return (0);
 }
 
-int track_configure(track_t *tck, int init_box)
+int track_configure(OneTrack *tck, int init_box)
 {
-    struct cfgtrack *cfg = &tck->cfg.track;
+    struct ConfigurationTrack *cfg = &tck->cfg.track;
 
     if (init_box >= cfg->nled_total)
         return -1;
@@ -257,9 +257,9 @@ int track_configure(track_t *tck, int init_box)
     return 0;
 }
 
-int ramp_configure(track_t *tck, int init, int center, int end, uint8_t high, int alwaysOn)
+int ramp_configure(OneTrack *tck, int init, int center, int end, uint8_t high, int alwaysOn)
 {
-    struct cfgramp *ramp = &tck->cfg.ramp;
+    struct ConfigurationRamp *ramp = &tck->cfg.ramp;
 
     if (init >= tck->cfg.track.nled_main || init <= 0)
         return -1;
@@ -284,9 +284,9 @@ int ramp_configure(track_t *tck, int init, int center, int end, uint8_t high, in
     return 0;
 }
 
-int battery_configure(track_t *tck, int delta, int min, int boost, int active)
+int battery_configure(OneTrack *tck, int delta, int min, int boost, int active)
 {
-    struct cfgbattery *battery = &tck->cfg.battery;
+    struct ConfigurationBattery *battery = &tck->cfg.battery;
 
     battery->delta = delta;
     battery->min = min;
@@ -296,7 +296,7 @@ int battery_configure(track_t *tck, int delta, int min, int boost, int active)
     return 0;
 }
 
-int race_configure(track_t *tck, int startline, int nlap, int nrepeat, int finishline)
+int race_configure(OneTrack *tck, int startline, int nlap, int nrepeat, int finishline)
 {
     struct cfgrace *race = &tck->cfg.race;
 

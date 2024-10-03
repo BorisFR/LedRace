@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "EnumsAndConstants.h"
 #include "HardwareConfiguration.h"
 
 /* ***************************************************************************
@@ -53,9 +54,9 @@ char const softwareId[] = "A2P0";
 char const version[] = "1.2.0";
 
 static race_t race;
-static car_t cars[MAX_PLAYERS];
-static controller_t switchs[MAX_PLAYERS];
-static track_t tck;
+static OneCar cars[MAX_PLAYERS];
+static OneController switchs[MAX_PLAYERS];
+static OneTrack tck;
 char tracksID[NUM_TRACKS][2] = {"U", "M", "B", "I", "O"};
 
 static int countdown_phase = 1;
@@ -82,11 +83,11 @@ void debug(String text)
   Serial.println("* " + text);
 }
 
-void param_load(struct cfgparam *cfg)
+void param_load(struct ConfigurationParameter *cfg)
 {
 
   /**
-  // Ignore EEPROM params during development of a new version of the [cfgparam]
+  // Ignore EEPROM params during development of a new version of the [ConfigurationParameter]
   param_setdefault( &tck.cfg );
   sprintf( txbuff, "%s%c", "Temporary....DEFAULT PAREMETRS LOADED ", EOL );
   serialCommand.sendCommand(txbuff);
@@ -99,8 +100,8 @@ void param_load(struct cfgparam *cfg)
   //    serialCommand.sendCommand(txbuff);
 
   if (tck.cfg.ver != CFGPARAM_VER)
-  { // [cfgparam.ver] read form EEPROM != [#define CFGPARAM_VER] in the code
-    // Each time a new version of the code modify the [cfgparam] struct, [#define CFGPARAM_VER] is also
+  { // [ConfigurationParameter.ver] read form EEPROM != [#define CFGPARAM_VER] in the code
+    // Each time a new version of the code modify the [ConfigurationParameter] struct, [#define CFGPARAM_VER] is also
     // changed to force the code enter here.
     // The previous values stored in EEPROM are invalid and need to be reset-to-default and
     // stored in the EEPROM again with the new "structure"
@@ -119,7 +120,7 @@ void set_controllers_mode(uint8_t numctrl, uint8_t mode)
   debug("set_controllers_mode: " + String(numctrl) + "/" + String(mode));
   for (uint8_t i = 0; i < numctrl; ++i)
   {
-    controller_init(&switchs[i], static_cast<ctr_type>(mode), DIGITAL_CTRL[i]);
+    controller_init(&switchs[i], static_cast<ControllerType>(mode), DIGITAL_CTRL[i]);
   }
 }
 
@@ -138,10 +139,10 @@ void init_cars(uint8_t numcars)
 /*
  *
  */
-void draw_ramp(track_t *_tck)
+void draw_ramp(OneTrack *_tck)
 {
   // debug("draw_ramp");
-  struct cfgramp const *r = &_tck->cfg.ramp;
+  struct ConfigurationRamp const *r = &_tck->cfg.ramp;
   byte dist = 0;
   byte intensity = 0;
   for (int i = r->init; i <= r->center; ++i)
@@ -161,20 +162,20 @@ void draw_ramp(track_t *_tck)
 /*
  *
  */
-void draw_box_entrypoint(track_t *_tck)
+void draw_box_entrypoint(OneTrack *_tck)
 {
   debug("draw_box_entrypoint");
-  struct cfgtrack const *cfg = &_tck->cfg.track;
+  struct ConfigurationTrack const *cfg = &_tck->cfg.track;
   int out = cfg->nled_total - cfg->box_len; // Pit lane exit (race start)
   int in = out - cfg->box_len;              // Pit lane Entrance
   track.SetPixelColor(in, COLOR_BOXMARKS);
   track.SetPixelColor(out, COLOR_BOXMARKS);
 }
 
-void strip_clear(track_t *tck, bool show_settings)
+void strip_clear(OneTrack *tck, bool show_settings)
 {
   // debug("strip_clear");
-  struct cfgtrack const *cfg = &tck->cfg.track;
+  struct ConfigurationTrack const *cfg = &tck->cfg.track;
   for (int i = 0; i < cfg->nled_main; i++)
     track.SetPixelColor(i, track.Color(0, 0, 0));
 
@@ -220,7 +221,7 @@ void setup()
 
   // Check if DEMO mode is configured
   race.demo_mode = param_option_is_active(&tck.cfg, DEMO_MODE_OPTION);
-  enum ctr_type current_mode = (race.demo_mode == true) ? DEMO_MODE : DIGITAL_MODE;
+  enum ControllerType current_mode = (race.demo_mode == true) ? DEMO_MODE : DIGITAL_MODE;
 
   // !!! Eliminare var current_mode ...mettere if contratto direttamente in f() call
 
@@ -789,7 +790,7 @@ ack_t manageSerialCommand()
 
     // Update box/slope active in current Track Struct with values
     // just loaded (for show_cfgpars_onstrip())
-    struct cfgparam const *cfg = &tck.cfg;
+    struct ConfigurationParameter const *cfg = &tck.cfg;
     tck.boxactive = param_option_is_active(&tck.cfg, BOX_MODE_OPTION);
     tck.rampactive = param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION);
 
@@ -799,7 +800,7 @@ ack_t manageSerialCommand()
 
   case ':': // Set board Unique Id
   {
-    struct brdinfo *info = &tck.cfg.info;
+    struct BoardInfo *info = &tck.cfg.info;
     ack.type = cmd[0];
     if (strlen(cmd + 1) > LEN_UID)
       return ack;
@@ -845,7 +846,7 @@ ack_t manageSerialCommand()
 
   case 'Q': // Get current configuration Info
   {
-    struct cfgparam const *cfg = &tck.cfg;
+    struct ConfigurationParameter const *cfg = &tck.cfg;
     sprintf(txbuff, "%s:%d,%d,%d,%d,%d,%d,%d.%03d,%d.%03d,%d%c", "QTK",
             cfg->track.nled_total,
             cfg->track.nled_main,
@@ -999,17 +1000,17 @@ boolean start_race_done()
   return (false);
 }
 
-void draw_coin(track_t *tck)
+void draw_coin(OneTrack *tck)
 {
   debug("draw_coin");
-  struct cfgtrack const *cfg = &tck->cfg.track;
+  struct ConfigurationTrack const *cfg = &tck->cfg.track;
   track.SetPixelColor(1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin, COLOR_COIN);
 }
 
-void draw_winner(track_t *tck, uint32_t color)
+void draw_winner(OneTrack *tck, uint32_t color)
 {
   debug("draw_winner");
-  struct cfgtrack const *cfg = &tck->cfg.track;
+  struct ConfigurationTrack const *cfg = &tck->cfg.track;
   for (int i = 16; i < cfg->nled_main; i = i + (8 * cfg->nled_main / 300))
   {
     track.SetPixelColor(i, color);
@@ -1020,10 +1021,10 @@ void draw_winner(track_t *tck, uint32_t color)
   delay(WINNER_SHOW_DURATION);
 }
 
-void draw_car_tail(track_t *tck, car_t *car)
+void draw_car_tail(OneTrack *tck, OneCar *car)
 {
   debug("draw_car_tail");
-  struct cfgtrack const *cfg = &tck->cfg.track;
+  struct ConfigurationTrack const *cfg = &tck->cfg.track;
 
   switch (car->trackID)
   {
@@ -1038,17 +1039,17 @@ void draw_car_tail(track_t *tck, car_t *car)
   }
 }
 
-void sound_winner(track_t *tck, byte winner)
+void sound_winner(OneTrack *tck, byte winner)
 {
   //  debug("sound_winner");
   audio.PlayWinnerMusic();
 }
 
-void draw_car(track_t *tck, car_t *car)
+void draw_car(OneTrack *tck, OneCar *car)
 {
   debug("draw_car");
-  struct cfgtrack const *cfg = &tck->cfg.track;
-  struct cfgbattery const *battery = &tck->cfg.battery;
+  struct ConfigurationTrack const *cfg = &tck->cfg.track;
+  struct ConfigurationBattery const *battery = &tck->cfg.battery;
 
   switch (car->trackID)
   {
@@ -1087,10 +1088,10 @@ void draw_car(track_t *tck, car_t *car)
   }
 }
 
-void run_racecycle(car_t *car, int caridx)
+void run_racecycle(OneCar *car, int caridx)
 {
   debug("run_racecycle");
-  struct cfgtrack const *cfg = &tck.cfg.track;
+  struct ConfigurationTrack const *cfg = &tck.cfg.track;
 
   // if( car->st == CAR_COMING ) {  // OLR Network only
   //   // To be implemented
@@ -1162,7 +1163,7 @@ void run_racecycle(car_t *car, int caridx)
   }
 }
 
-int get_relative_position(car_t *car)
+int get_relative_position(OneCar *car)
 {
   // debug("get_relative_position");
   enum
@@ -1170,7 +1171,7 @@ int get_relative_position(car_t *car)
     MIN_RPOS = 0,
     MAX_RPOS = 99,
   };
-  struct cfgtrack const *cfg = &tck.cfg.track;
+  struct ConfigurationTrack const *cfg = &tck.cfg.track;
   int trackdist = 0;
   int pos = 0;
 
@@ -1188,7 +1189,7 @@ int get_relative_position(car_t *car)
   return pos;
 }
 
-void print_cars_positions(car_t *cars)
+void print_cars_positions(OneCar *cars)
 {
   // debug("print_cars_positions");
   bool outallcar = true;
