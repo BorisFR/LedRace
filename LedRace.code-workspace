@@ -1,18 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "Common",
-			"path": "./Common"
-		},
-		{
-			"name": "RaceBoard",
-			"path": "./RaceBoard"
-		},
-		{
-			"name": "RaceDisplay",
-			"path": "./RaceDisplay"
-		},
-		{
 			"name": "LedRace",
 			"path": "."
 		}
