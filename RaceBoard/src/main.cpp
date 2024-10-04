@@ -126,7 +126,7 @@ void param_load(struct ConfigurationParameter *cfg)
     // stored in the EEPROM again with the new "structure"
     param_setdefault(&theTrack.cfg, track.NumberOfPixels());
     EEPROM.put(eeadrInfo, theTrack.cfg);
-    sprintf(txbuff, "%s:%d%c", "DEFAULT->EEPROM-v)", theTrack.cfg.ver, EOL);
+    sprintf(txbuff, "%s%d)%c", "Hello (v", theTrack.cfg.ver, EOL);
     serialCommand.sendCommand(txbuff);
   }
 }
@@ -149,7 +149,7 @@ void set_controllers_mode(uint8_t numctrl, uint8_t mode)
  */
 void init_cars(uint8_t numcars)
 {
-  debug("init_cars: " + String(numcars));
+  // debug("init_cars: " + String(numcars));
   for (uint8_t i = 0; i < numcars; ++i)
   {
     car_init(&cars[i], &switchs[i], car_color[i]);
@@ -218,7 +218,7 @@ void setup()
   Serial2.begin(SERIAL_BAUD);
   delay(1500);
   heap_caps_check_integrity_all(true);
-  debug("ADIMAKER Led Race");
+  debug("* Led Race * *");
   randomSeed(analogRead(A6) + analogRead(A7));
   telemetry.Setup();
   controller.Setup();
@@ -292,7 +292,7 @@ void setup()
 
   //  last_activity_millis = millis();
 
-  debug("SETUP: OK");
+  // debug("SETUP: OK");
 }
 
 bool players_actity(uint8_t numcars)
