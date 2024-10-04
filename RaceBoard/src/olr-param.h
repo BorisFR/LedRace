@@ -11,18 +11,8 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 #include "EnumsAndConstants.h"
+#include "GameConfiguration.h"
 
-// Default values loaded on "D" command received (Serial Protocol)
-//////////////////////////////////////////////////////////////////
-#define BOXLEN 10
-#define NUMLAP 5
-#define BATTERY_MODE false
-#define AUTOSTART_MODE false
-#define BOX_ALWAYS_ON false
-#define SLOPE_ALWAYS_ON true
-#define PLAYER_3 false
-#define PLAYER_4 false
-#define DEMO_MODE_ST false
     //////////////////////////////////////////////////////////////////
 
     void param_setdefault(struct ConfigurationParameter *cfg, uint16_t numberOfLeds);

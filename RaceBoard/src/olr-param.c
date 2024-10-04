@@ -25,7 +25,7 @@ void param_setdefault(struct ConfigurationParameter *cfg, uint16_t numberOfLeds)
     cfg->ramp.init = 29;
     cfg->ramp.center = 40;
     cfg->ramp.end = 50;
-    cfg->ramp.high = 4;
+    cfg->ramp.high = 2;
     param_option_set(cfg, SLOPE_MODE_OPTION, SLOPE_ALWAYS_ON);
 
     cfg->track.nled_total = numberOfLeds; // NUMBER_OF_LED: Total LED number in the racetrack (default:300 -> 5mt, 60LED/mt Strip)
@@ -35,9 +35,9 @@ void param_setdefault(struct ConfigurationParameter *cfg, uint16_t numberOfLeds)
     cfg->track.box_len = BOXLEN;
     param_option_set(cfg, BOX_MODE_OPTION, BOX_ALWAYS_ON);
 
-    cfg->track.kf = 0.013;
+    cfg->track.kf = CAR_FRICTION;
     // TODO: 0.015;                 // friction constant
-    cfg->track.kg = 0.003;
+    cfg->track.kg = CAR_SLOPE_GRAVITY;
     // TODO: 0.006; // gravity constant  - Used in Slope
 
     param_option_set(cfg, PLAYER_3_OPTION, PLAYER_3);

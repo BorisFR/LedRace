@@ -4,17 +4,12 @@
 #include "Arduino.h"
 #include "HardwareConfiguration.h"
 #include "EnumsAndConstants.h"
-
+/*
 #include <esp_now.h>
 #include "WiFi.h"
-
-// extern uint8_t broadcastAddress[];
-
-extern "C"
-{
-    // void networkInit();
-};
-
+#include <esp_err.h>
+#include <esp_wifi.h>
+*/
 class Telemetry
 {
 public:
@@ -24,7 +19,7 @@ public:
 
 private:
     uint8_t broadcastAddress[ADDRESS_LENGTH];
-    esp_now_peer_info_t peerInfo;
+    // esp_now_peer_info_t peerInfo;
     bool networkOk = false;
     struct_message myData;
 };

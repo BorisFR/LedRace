@@ -19,9 +19,9 @@ enum cfgparam_option_bit
 
 enum ConfigurationParameterDefinition
 {
-    CFGPARAM_VER = 10, // Change this value (+=1) every time the [ConfigurationParameter] struct is modified
-                       // This will force an update with the new [struct] to the settings
-                       // stored in EEPROM with an old (invalid) struct
+    CFGPARAM_VER = 7, // Change this value (+=1) every time the [ConfigurationParameter] struct is modified
+                      // This will force an update with the new [struct] to the settings
+                      // stored in EEPROM with an old (invalid) struct
     LEN_UID = 16,
 };
 

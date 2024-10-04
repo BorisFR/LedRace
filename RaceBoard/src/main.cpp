@@ -400,7 +400,7 @@ ack_t manageSerialCommand()
   if (clen == 0)
     return ack; // No commands received
 
-  debug("manageSerialCommand: received");
+  // debug("manageSerialCommand: received");
   if (clen < 0)
   { // Error receiving command
     sprintf(txbuff, "Error reading serial command:[%d]", clen);
@@ -927,7 +927,7 @@ ack_t manageSerialCommand()
 
   } // switch
 
-  debug("manageSerialCommand: DONE");
+  // debug("manageSerialCommand: DONE");
   return (ack);
 }
 
@@ -936,7 +936,7 @@ ack_t manageSerialCommand()
  */
 void sendResponse(ack_t *ack)
 {
-  debug("sendResponse");
+  // debug("sendResponse");
   if (ack->type == '\0')
   {
     sprintf(txbuff, "%s%c", ack->rp == OKK ? "OK" : "NOK", EOL);
@@ -953,7 +953,7 @@ void sendResponse(ack_t *ack)
  */
 void countdownReset()
 {
-  debug("countdownReset");
+  // debug("countdownReset");
   countdownCurrentPhase = 1;
   countdownNewPhase = true;
 }
@@ -970,41 +970,41 @@ void send_phase(int phase)
  */
 boolean start_race_done()
 {
-  debug("start_race_done");
+  // debug("start_race_done");
   if (countdownNewPhase)
   {
-    debug("start_race_done: new phase");
+    // debug("start_race_done: new phase");
     countdownNewPhase = false;
     startRaceDelay.start(CONTDOWN_PHASE_DURATION);
     strip_clear(&theTrack, true);
     switch (countdownCurrentPhase)
     {
     case 1:
-      debug("start_race_done: 1");
+      // debug("start_race_done: 1");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
       break;
     case 2:
-      debug("start_race_done: 2");
+      // debug("start_race_done: 2");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
       track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
       break;
     case 3:
-      debug("start_race_done: 3");
+      // debug("start_race_done: 3");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
       break;
     case 4:
-      debug("start_race_done: 4");
+      // debug("start_race_done: 4");
       startRaceDelay.start(CONTDOWN_STARTSOUND_DURATION);
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
       track.SetPixelColor(0, track.Color(255, 255, 255));
       break;
     case 5:
-      debug("start_race_done: 5");
+      // debug("start_race_done: 5");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       countdownReset(); // reset for next countdown
       return (true);
@@ -1013,7 +1013,7 @@ boolean start_race_done()
   }
   if (startRaceDelay.elapsed())
   {
-    debug("start_race_done: elapsed");
+    // debug("start_race_done: elapsed");
     audio.SoundOff();
     countdownNewPhase = true;
     countdownCurrentPhase++;
@@ -1023,14 +1023,14 @@ boolean start_race_done()
 
 void draw_coin(TheTrack *theTrack)
 {
-  debug("draw_coin");
+  // debug("draw_coin");
   struct ConfigurationTrack const *cfg = &theTrack->cfg.track;
   track.SetPixelColor(1 + cfg->nled_main + cfg->nled_aux - theTrack->ledcoin, COLOR_COIN);
 }
 
 void draw_winner(TheTrack *theTrack, uint32_t color)
 {
-  debug("draw_winner");
+  // debug("draw_winner");
   struct ConfigurationTrack const *cfg = &theTrack->cfg.track;
   for (int i = 16; i < cfg->nled_main; i = i + (8 * cfg->nled_main / 300))
   {
@@ -1235,7 +1235,7 @@ void loop()
   ack_t ack = manageSerialCommand();
   if (ack.rp != NOTHING)
   {
-    debug("ack.rp != NOTHING");
+    // debug("ack.rp != NOTHING");
     sendResponse(&ack);
   }
 
@@ -1338,7 +1338,7 @@ void loop()
 
     if (goOn || (!race.cfg.startline))
     { // Standalone mode is Ready for Countdown __OR__ Network mode and Race does not starts here
-      debug("PHASE: ready / for countdown");
+      // debug("PHASE: ready / for countdown");
       for (int i = 0; i < race.numcars; ++i)
       {
         car_resetPosition(&cars[i], true);
@@ -1358,7 +1358,7 @@ void loop()
 
   case COUNTDOWN:
   {
-    debug("PHASE: countdown");
+    // debug("PHASE: countdown");
     if (race.cfg.startline)
     { // Standalone: Always true - Network mode: only racetrack where race starts
       // Countdown: semaphore and tones
@@ -1435,7 +1435,7 @@ void loop()
 
   case COMPLETE:
   {
-    debug("PHASE: complete");
+    // debug("PHASE: complete");
     strip_clear(&theTrack, false);
     track.Show();
     draw_winner(&theTrack, cars[race.winner].color);
@@ -1453,7 +1453,7 @@ void loop()
 
   case IDLE: // OLR Network only
   {
-    debug("PHASE: idle");
+    // debug("PHASE: idle");
     ; // -- see comment in CONFIG_OK status
   }
   break;

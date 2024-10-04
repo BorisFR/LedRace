@@ -1,6 +1,6 @@
 
-RAM:   [          ]   4.4% (used 23364 bytes from 532480 bytes)
-Flash: [==        ]  24.2% (used 317169 bytes from 1310720 bytes)
+RAM:   [=         ]   8.3% (used 44404 bytes from 532480 bytes)
+Flash: [======    ]  58.9% (used 772077 bytes from 1310720 bytes)
 
 Chip is ESP32-D0WD-V3 (revision v3.1)
 Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None      
@@ -22,3 +22,40 @@ R4
 * start_race_done: new phase
 
 
+R4
+R5
+p1M1,0,100
+p2M1,0,100
+p1M1,0,100
+p2M1,0,100
+p1M1,7,100
+p2M1,0,100
+p1M1,34,100
+p2M1,0,100
+p1M1,66,100
+p2M1,0,100
+p1M2,99,100
+...
+p1M5,59,100
+p2M3,31,100
+p1M5,70,100
+p2M3,31,100
+p1M5,91,100
+p2M3,31,100
+p1M5,95,100
+p2M3,31,100
+w1
+R8
+R5
+E (116645) ledc: ledc_set_duty(720): LEDC is not initialized
+E (116646) ledc: ledc_update_duty(648): LEDC is not initialized
+p1M1,0,100
+p2M1,0,100
+p1M1,0,100
+...
+p1M5,9,100
+p2M5,62,100
+p1M5,36,100
+p2M5,91,100
+w2
+R8
