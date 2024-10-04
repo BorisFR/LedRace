@@ -16,11 +16,12 @@ class Controller
 public:
     Controller();
     void Setup();
-    void controller_init(OneController *ct, enum ControllerType mode, byte carNumber);
+    void controller_init(OneController *controller, ControllerType mode, byte carNumber);
     byte controller_getStatus(OneController *ct);
     float controller_getSpeed(OneController *ct);
     float controller_getAccel();
     bool controller_isActive(byte carNumber);
+    // void set_controllers_mode(OneController *controller, ControllerType mode);
 
 private:
     int DIGITAL_CTRL[MAX_PLAYER_NUMBER];

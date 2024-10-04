@@ -15,6 +15,7 @@ void Audio::MuteOn()
 void Audio::MuteOff()
 {
     muteActive = false;
+    tone(PIN_AUDIO, 100);
 }
 void Audio::SoundOff()
 {

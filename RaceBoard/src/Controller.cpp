@@ -15,11 +15,11 @@ void Controller::Setup()
     pinMode(DIG_CTRL_4_PIN, INPUT_PULLUP);
 }
 
-void Controller::controller_init(OneController *ct, enum ControllerType mode, byte carNumber)
+void Controller::controller_init(OneController *controller, ControllerType mode, byte carNumber)
 {
-    ct->mode = mode;
-    ct->pin = DIGITAL_CTRL[carNumber];
-    ct->delta_analog = DELTA_ANALOG;
+    controller->mode = mode;
+    controller->pin = DIGITAL_CTRL[carNumber];
+    controller->delta_analog = DELTA_ANALOG;
 }
 
 byte Controller::controller_getStatus(OneController *ct)
@@ -78,3 +78,11 @@ bool Controller::controller_isActive(byte carNumber)
 {
     return !digitalRead(DIGITAL_CTRL[carNumber]);
 }
+
+/*void Controller::set_controllers_mode(OneController *controller, ControllerType mode)
+{
+    for (uint8_t i = 0; i < MAX_PLAYER_NUMBER; ++i)
+    {
+        controller_init(controller, mode, i);
+    }
+}*/
