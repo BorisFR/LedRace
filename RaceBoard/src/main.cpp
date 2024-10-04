@@ -1111,7 +1111,7 @@ void draw_car(TheTrack *theTrack, OneCar *car)
 
 void run_racecycle(OneCar *car, int caridx)
 {
-  debug("run_racecycle");
+  // debug("run_racecycle");
   struct ConfigurationTrack const *cfg = &theTrack.cfg.track;
 
   // if( car->st == CAR_COMING ) {  // OLR Network only
@@ -1377,7 +1377,7 @@ void loop()
 
   case RACING:
   {
-    debug("PHASE: racing");
+    // debug("PHASE: racing");
     strip_clear(&theTrack, true);
 
     if (box_isactive(&theTrack))
