@@ -1,7 +1,21 @@
 #include "Audio.h"
 
-Audio::Audio() { playMotorSound = false; }
+Audio::Audio()
+{
+    playMotorSound = false;
+    if (SOUND_OFF)
+        MuteOn();
+}
 
+void Audio::MuteOn()
+{
+    muteActive = true;
+}
+
+void Audio::MuteOff()
+{
+    muteActive = false;
+}
 void Audio::SoundOff()
 {
     noTone(PIN_AUDIO);
@@ -10,17 +24,23 @@ void Audio::SoundOff()
 void Audio::MotorSound(bool isActivate)
 {
     playMotorSound = isActivate;
+    if (muteActive)
+        return;
     tone(PIN_AUDIO, 100);
 }
 
 void Audio::PlayMotorSound(unsigned int frequency)
 {
+    if (muteActive)
+        return;
     if (!playMotorSound)
         return;
     tone(PIN_AUDIO, frequency);
 }
 void Audio::PlayCountdown(countdown phase)
 {
+    if (muteActive)
+        return;
     switch (phase)
     {
     case Countdown1:
@@ -43,6 +63,8 @@ void Audio::PlayCountdown(countdown phase)
 
 void Audio::PlayWinnerMusic()
 {
+    if (muteActive)
+        return;
     int win_music[] = {
         2637, 2637, 0, 2637,
         0, 2093, 2637, 0,

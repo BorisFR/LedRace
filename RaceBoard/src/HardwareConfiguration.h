@@ -4,6 +4,8 @@
 #include "Arduino.h"
 #include "./../../common/Common.h"
 
+#define SOUND_OFF true
+
 /*
     ******************************************************************
         Hardware

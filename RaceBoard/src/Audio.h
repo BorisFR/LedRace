@@ -9,6 +9,8 @@ class Audio
 {
 public:
     Audio();
+    void MuteOn();
+    void MuteOff();
     void SoundOff();
     void MotorSound(bool isActivate);
     void PlayMotorSound(unsigned int frequency);
@@ -16,6 +18,7 @@ public:
     void PlayWinnerMusic();
 
 private:
+    bool muteActive = false;
     bool playMotorSound = false;
 };
 
