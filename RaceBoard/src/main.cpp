@@ -1225,6 +1225,7 @@ void print_cars_positions(OneCar *cars)
     int const rpos = get_relative_position(&cars[i]);
     sprintf(txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, (int)cars[i].battery, EOL);
     serialCommand.sendCommand(txbuff);
+    telemetry.Send(txbuff);
   }
 }
 

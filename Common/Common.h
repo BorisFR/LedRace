@@ -40,13 +40,14 @@ struct tOneDevice
 // Must match the receiver structure
 typedef struct struct_message
 {
-    char a[32];
+    char message[TX_COMMAND_BUFLEN];
+    /*char a[32];
     int b;
     float c;
-    bool d;
+    bool d;*/
 } struct_message;
 
 // MAC Address of responder (the race's server)
 #define BROADCAT_ADDRESS const uint8_t THE_ADDRESS[] = {0x88, 0x13, 0xBF, 0x01, 0xE4, 0xC0};
-
+#define WIFI_CHANNEL 12
 #endif

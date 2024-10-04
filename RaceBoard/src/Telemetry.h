@@ -20,7 +20,7 @@ class Telemetry
 public:
     Telemetry();
     void Setup();
-    void Send();
+    void Send(char txbuff[TX_COMMAND_BUFLEN]);
 
 private:
     uint8_t broadcastAddress[ADDRESS_LENGTH];

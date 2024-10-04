@@ -23,7 +23,7 @@ void Telemetry::Setup()
 
     // Register peer
     memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-    peerInfo.channel = 0;
+    peerInfo.channel = WIFI_CHANNEL;
     peerInfo.encrypt = false;
 
     // Add peer
@@ -36,19 +36,12 @@ void Telemetry::Setup()
     Serial.println("* Network ready");
 }
 
-void Telemetry::Send()
+void Telemetry::Send(char txbuff[TX_COMMAND_BUFLEN])
 {
     if (!networkOk)
         return;
-    // Set values to send
-    strcpy(myData.a, "THIS IS A CHAR");
-    myData.b = random(1, 20);
-    myData.c = 1.2;
-    myData.d = false;
-
-    // Send message via ESP-NOW
+    strcpy(myData.message, txbuff);
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
-
     if (result == ESP_OK)
     {
         Serial.println("Sent with success");
