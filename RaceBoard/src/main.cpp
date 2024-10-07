@@ -217,6 +217,7 @@ void setup()
   Serial.begin(SERIAL_BAUD);
   Serial2.begin(SERIAL_BAUD);
   delay(1500);
+  Serial2.println("Hello LedRace");
   heap_caps_check_integrity_all(true);
   debug("* Led Race * *");
   randomSeed(analogRead(A6) + analogRead(A7));

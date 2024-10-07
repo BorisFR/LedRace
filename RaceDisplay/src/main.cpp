@@ -28,6 +28,9 @@ U2/RX: 16
 
 TFT_eSPI display = TFT_eSPI(); // Invoke custom library
 
+char txtBuffer[TX_COMMAND_BUFLEN];
+byte bufferPosition = 0;
+
 unsigned long last;
 byte countdownNumber;
 byte lapNumber;
@@ -91,9 +94,57 @@ void loop()
   //  tft.drawCentreString("MATRIX", TFT_WIDTH / 2, TFT_HEIGHT / 2, 4);
   while (Serial2.available() > 0)
   {
-    String received = Serial2.readString();
-    // int incomingByte = Serial.read();
-    // Serial.println(incomingByte, DEC);
-    Serial.println(received);
+    // String received = Serial2.readString();
+    // Serial.println(received);
+    int incomingByte = Serial2.read();
+    // if (incomingByte > 0)
+    //{
+    //   if (incomingByte < 250)
+    //   {
+    //     // Serial.println(incomingByte, DEC);
+    //     Serial.print((char)incomingByte);
+    //   }
+    // }
+    txtBuffer[bufferPosition++] = (char)incomingByte;
+    if (incomingByte == EOL)
+    {
+      txtBuffer[--bufferPosition] = 0;
+      bufferPosition = 0;
+      String message = txtBuffer;
+      if (message == "R4")
+      {
+        Serial.println("Starting countdown");
+      }
+      else
+      {
+        if (message == "w1")
+        {
+          Serial.println("Player 1 WIN");
+        }
+        else
+        {
+          if (message == "w2")
+          {
+            Serial.println("Player 2 WIN");
+          }
+          else
+          {
+            if (message == "R8")
+            {
+              Serial.println("IDLE time");
+            }
+            else
+            {
+              if (txtBuffer[0] == 'p')
+              {
+                byte playerNumber = txtBuffer[1] - 48;
+                byte playerLap = txtBuffer[3] - 48;
+                Serial.println("Player " + String(playerNumber) + ": " + String(playerLap));
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -4,6 +4,8 @@
 
 #define SERIAL_BAUD 115200
 
+#define EOL '\n' // End of Command char used in Protocol
+
 #define REC_COMMAND_BUFLEN 32 // received command buffer size
                               // At the moment, the largest received command is RAMP CONFIGURATION (A)
                               //    ex: A1400,1430,1460,12,0[EOC] (for a 1500 LED strip)
