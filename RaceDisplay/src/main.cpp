@@ -39,7 +39,7 @@ void showLap()
   display.setFreeFont(&Roboto_Black_30);
   display.setTextDatum(TL_DATUM);
   display.setTextColor(TFT_CYAN);
-  display.drawString("LAP " + String(lapNumber), 6, 6);
+  display.drawString("LAP: " + String(lapNumber), 6, 6);
 }
 
 void setup()
@@ -51,7 +51,7 @@ void setup()
   display.fillScreen(TFT_BLACK);
 
   countdownNumber = 0;
-  lapNumber = 0;
+  lapNumber = 20;
   showLap();
 }
 
@@ -89,4 +89,11 @@ void loop()
   // display.println("Hello World!");
   //  tft.setTextColor(63 << 5, 0);
   //  tft.drawCentreString("MATRIX", TFT_WIDTH / 2, TFT_HEIGHT / 2, 4);
+  while (Serial2.available() > 0)
+  {
+    String received = Serial2.readString();
+    // int incomingByte = Serial.read();
+    // Serial.println(incomingByte, DEC);
+    Serial.println(received);
+  }
 }
