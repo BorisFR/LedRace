@@ -1,57 +1,62 @@
 #include <Arduino.h>
 #include "./../../common/Common.h"
 
-/*
-DISPLAY
-=======
-LED   noir  3.3V    pjt temp
-SCK   blanc 18 x    rouge   18
-SDA   gris  23 x    marron  23
-A0    mauve 2 x     noir    16
-RESET bleu  4  x    jaune   4
-CS    vert  15 x    orange  15
-GND   jaune GND     marron
-VCC   orange  5V    rouge
+/* ***************************************************************************
+  Communication stuff (Serial2, pin 16/17)
+*************************************************************************** */
+#include <iostream>
+#include <sstream>
+#include <vector>
+using namespace std;
 
-SERIAL
-======
-U2/TX: 17
-U2/RX: 16
-*/
-
-// #include <Wire.h>
-
-#include <TFT_eSPI.h> // Hardware-specific library
-#include <SPI.h>
-#include "Orbitron-Bold-80.h"
-#include "Roboto_Black_30.h"
-
-TFT_eSPI display = TFT_eSPI(); // Invoke custom library
-
+int incomingByte;
+stringstream stringToParse;
+vector<string> stringParts;
+char delimiter = ',';
+string oneString;
+// string message;
 char txtBuffer[TX_COMMAND_BUFLEN];
 byte bufferPosition = 0;
 
+/* ***************************************************************************
+  Display stuff
+*************************************************************************** */
+
+#include "Display.h"
+
+Display display = Display();
+
+/* ***************************************************************************
+  Race stuff
+*************************************************************************** */
 unsigned long last;
 byte countdownNumber;
 byte lapNumber;
 
-#define COUNTDOWN_POS_Y 30
-
 void showLap()
 {
-  display.setFreeFont(&Roboto_Black_30);
-  display.setTextDatum(TL_DATUM);
-  display.setTextColor(TFT_CYAN);
-  display.drawString("LAP: " + String(lapNumber), 6, 6);
+  display.PlayerLap(1, lapNumber);
+}
+
+void parsePlayerLap(byte playerNumber)
+{
+  if (stringParts.size() == 3)
+  {
+    String playerLap = stringParts[1].c_str();
+    Serial.println("Player " + String(playerNumber) + ": " + String(playerLap));
+  }
+}
+
+void parsePlayerWin(byte playerNumber)
+{
+  Serial.println("Winner: " + String(playerNumber));
 }
 
 void setup()
 {
   Serial.begin(115200);
   Serial2.begin(SERIAL_BAUD);
-  display.init();
-  display.setRotation(0);
-  display.fillScreen(TFT_BLACK);
+  display.Setup();
 
   countdownNumber = 0;
   lapNumber = 20;
@@ -66,21 +71,8 @@ void loop()
       countdownNumber--;
     else
       countdownNumber = 5;
-    display.fillScreen(TFT_BLACK);
-    if (countdownNumber == 0)
-    {
-      display.setFreeFont(&Orbitron_Bold_80);
-      display.setTextColor(TFT_GREEN);
-      display.setTextDatum(TC_DATUM);
-      display.drawString("GO", TFT_WIDTH / 2, COUNTDOWN_POS_Y);
-    }
-    else
-    {
-      display.setFreeFont(&Orbitron_Bold_80);
-      display.setTextColor(TFT_WHITE);
-      display.setTextDatum(TC_DATUM);
-      display.drawString(String(countdownNumber), TFT_WIDTH / 2, COUNTDOWN_POS_Y);
-    }
+    display.Clear();
+    display.Countdown(countdownNumber);
     last = millis();
     showLap();
   }
@@ -92,59 +84,53 @@ void loop()
   // display.println("Hello World!");
   //  tft.setTextColor(63 << 5, 0);
   //  tft.drawCentreString("MATRIX", TFT_WIDTH / 2, TFT_HEIGHT / 2, 4);
+  // return;
   while (Serial2.available() > 0)
   {
-    // String received = Serial2.readString();
-    // Serial.println(received);
-    int incomingByte = Serial2.read();
-    // if (incomingByte > 0)
-    //{
-    //   if (incomingByte < 250)
-    //   {
-    //     // Serial.println(incomingByte, DEC);
-    //     Serial.print((char)incomingByte);
-    //   }
-    // }
-    txtBuffer[bufferPosition++] = (char)incomingByte;
-    if (incomingByte == EOL)
+    incomingByte = Serial2.read();
+    if (incomingByte > 0 && incomingByte < 250)
     {
-      txtBuffer[--bufferPosition] = 0;
-      bufferPosition = 0;
-      String message = txtBuffer;
-      if (message == "R4")
+      if (bufferPosition >= TX_COMMAND_BUFLEN)
+        bufferPosition = 0;
+      txtBuffer[bufferPosition++] = (char)incomingByte;
+      if (incomingByte == EOL)
       {
-        Serial.println("Starting countdown");
-      }
-      else
-      {
-        if (message == "w1")
+        txtBuffer[--bufferPosition] = 0;
+        bufferPosition = 0;
+        // oneString = txtBuffer;
+        stringToParse = stringstream(txtBuffer);
+        while (getline(stringToParse, oneString, delimiter))
+          stringParts.push_back(oneString);
+        oneString = stringParts[0].c_str();
+        if (oneString == "p1")
+          parsePlayerLap(1);
+        else if (oneString == "p2")
+          parsePlayerLap(2);
+        else if (oneString == "p3")
+          parsePlayerLap(3);
+        else if (oneString == "p4")
+          parsePlayerLap(4);
+        else if (oneString == "w1")
+          parsePlayerWin(1);
+        else if (oneString == "w2")
+          parsePlayerWin(2);
+        else if (oneString == "w3")
+          parsePlayerWin(3);
+        else if (oneString == "w4")
+          parsePlayerWin(4);
+        else if (oneString == "R4")
         {
-          Serial.println("Player 1 WIN");
+          Serial.println("Starting countdown");
+        }
+        else if (oneString == "R8")
+        {
+          Serial.println("IDLE time");
         }
         else
         {
-          if (message == "w2")
-          {
-            Serial.println("Player 2 WIN");
-          }
-          else
-          {
-            if (message == "R8")
-            {
-              Serial.println("IDLE time");
-            }
-            else
-            {
-              if (txtBuffer[0] == 'p')
-              {
-                byte playerNumber = txtBuffer[1] - 48;
-                byte playerLap = txtBuffer[3] - 48;
-                Serial.println("Player " + String(playerNumber) + ": " + String(playerLap));
-              }
-            }
-          }
+          Serial.println(txtBuffer);
         }
-      }
+      } // incomingByte == EOL
     }
-  }
+  } // While Serial2.available
 }

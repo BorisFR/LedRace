@@ -21,7 +21,12 @@
 		"platformio-ide.autoOpenPlatformIOIniFile": false,
 		"platformio-ide.activateProjectOnTextEditorChange": true,
 		"files.associations": {
-			"olr-controller.h": "c"
+			"olr-controller.h": "c",
+			"string": "cpp",
+			"format": "cpp",
+			"*.tcc": "cpp",
+			"istream": "cpp",
+			"system_error": "cpp"
 		}
 	}
 }
