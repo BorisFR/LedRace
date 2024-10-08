@@ -93,8 +93,10 @@ Serial 0 : RX0=3 TX0=1 (USB)
 Serial 1 : RX1=9 TX1=10
 Serial 2 : RX2=16 TX2=17
 */
-char cmd[REC_COMMAND_BUFLEN];                                                                 // Stores command received by ReadSerialComand()
-SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial, &Serial2); // get complete command from serial
+char cmd[REC_COMMAND_BUFLEN];                                                       // Stores command received by ReadSerialComand()
+char cmd2[REC_COMMAND_BUFLEN];                                                      // Stores command received by ReadSerialComand()
+SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial); // get complete command from serial
+SerialCommand serialCommand2 = SerialCommand(cmd2, REC_COMMAND_BUFLEN, EOL, &Serial2);
 char txbuff[TX_COMMAND_BUFLEN];
 
 void debug(String text)
@@ -128,6 +130,7 @@ void param_load(struct ConfigurationParameter *cfg)
     EEPROM.put(eeadrInfo, theTrack.cfg);
     sprintf(txbuff, "%s%d)%c", "Hello (v", theTrack.cfg.ver, EOL);
     serialCommand.sendCommand(txbuff);
+    serialCommand2.sendCommand(txbuff);
   }
 }
 
@@ -334,6 +337,7 @@ void activate_demo_mode(void)
 
   sprintf(txbuff, "%c%d%c", 'M', 1, EOL);
   serialCommand.sendCommand(txbuff);
+  serialCommand2.sendCommand(txbuff);
 }
 
 /**
@@ -350,6 +354,7 @@ void exit_demo_mode(void)
 
   sprintf(txbuff, "%c%d%c", 'M', 0, EOL);
   serialCommand.sendCommand(txbuff);
+  serialCommand2.sendCommand(txbuff);
 }
 
 /*
@@ -394,12 +399,22 @@ void printdebug(const char *msg, int errlevel)
  */
 ack_t manageSerialCommand()
 {
+  SerialCommand sr = serialCommand;
+  char currentCommand;
   // debug("manageSerialCommand");
   ack_t ack = {.rp = NOTHING, .type = '\0'};
 
   int clen = serialCommand.checkSerial();
   if (clen == 0)
-    return ack; // No commands received
+  {
+    clen = serialCommand2.checkSerial();
+    if (clen == 0)
+      return ack; // No commands received
+    currentCommand = cmd2[0];
+    sr = serialCommand2;
+  }
+  else
+    currentCommand = cmd[0];
 
   // debug("manageSerialCommand: received");
   if (clen < 0)
@@ -417,21 +432,21 @@ ack_t manageSerialCommand()
   //  printdebug( txbuff, WARNING );
   //}
 
-  switch (cmd[0])
+  switch (currentCommand)
   {
 
   case '#': // Handshake
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     sprintf(txbuff, "#%c", EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
     ack.rp = NOTHING;
   }
   break;
 
   case '@': // Enter "Configuration Mode" status
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     if (race.phase != CONFIG)
     { // Ignore command if Board already in "Configure Mode"
       race.phase = CONFIG;
@@ -443,7 +458,7 @@ ack_t manageSerialCommand()
 
   case '*': // Exit "Configure Mode"
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     if (race.phase == CONFIG)
     { // Ignore command if Board is not in "Configure Mode"
       race.newcfg = true;
@@ -454,7 +469,7 @@ ack_t manageSerialCommand()
 
   case 'R': // Set Race Phase
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     uint8_t const phase = atoi(cmd + 1);
     /**
     *  Reintrodotto momentaneamente R1=enter config per testare RelayRace con Networkclient esistente
@@ -477,7 +492,7 @@ ack_t manageSerialCommand()
 
   case 'u': // Car Enter the Circuit - // OLR Network only
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     byte const data = cmd[1];
     byte const ncar = 0b00000111 & (data >> 5);
     byte const speed = 0b00011111 & data;
@@ -497,7 +512,7 @@ ack_t manageSerialCommand()
 
   case 't': // Car Coming into the Circuit - // OLR Network only
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     byte const ncar = atoi(cmd + 1);
     if (0 >= ncar || race.numcars < ncar)
       return ack;
@@ -515,7 +530,7 @@ ack_t manageSerialCommand()
             // Standalone mode: Board _NEVER_ receives a 'w' command !!!
   {         // Network mode: 1) Command "w" sent by the Board where the race ends
             //               2) Every other participant (Board) receives 'w' command
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     byte const ncar = atoi(cmd + 1);
     if (0 >= ncar || race.numcars < ncar)
       return ack;
@@ -529,7 +544,7 @@ ack_t manageSerialCommand()
 
   case 'C': // Parse race configuration -> C1,2,3,0
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "C");
     if (!pch)
@@ -570,7 +585,7 @@ ack_t manageSerialCommand()
 
   case 'T': // Parse Track configuration -> Track length
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "T");
     if (!pch)
@@ -590,7 +605,7 @@ ack_t manageSerialCommand()
 
   case 'B': // Parse BoxLenght Configuration -> Blen,perm
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "B");
     if (!pch)
@@ -621,7 +636,7 @@ ack_t manageSerialCommand()
 
   case 'A': // Parse Ramp configuration -> Astart,center,end,high,perm
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "A");
     if (!pch)
@@ -667,7 +682,7 @@ ack_t manageSerialCommand()
 
   case 'E': // Parse Battery configuration -> Edelta,min,boost,active
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "E");
     if (!pch)
@@ -702,7 +717,7 @@ ack_t manageSerialCommand()
 
   case 'G': // Parse Autostart configuration -> Gautostart
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "G");
     if (!pch)
@@ -719,7 +734,7 @@ ack_t manageSerialCommand()
 
   case 'M': // Parse DEMO mode configuration
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "M");
     if (!pch)
@@ -745,7 +760,7 @@ ack_t manageSerialCommand()
 
   case 'P': // Parse Player 3/4 configuration -> P[2|3|4]
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "P");
     if (!pch)
@@ -762,7 +777,7 @@ ack_t manageSerialCommand()
 
   case 'K': // Parse Physic simulation parameters
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
 
     char *pch = strtok(cmd, "K");
     if (!pch)
@@ -788,7 +803,7 @@ ack_t manageSerialCommand()
 
   case 'H': // Tunnel configuration - // OLR Network only
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     uint8_t const dtunnel = atoi(cmd + 1);
     if (0 >= dtunnel || 254 < dtunnel)
       return ack;
@@ -804,7 +819,7 @@ ack_t manageSerialCommand()
 
   case 'D': // Load Default Parameters and store them in from EEPROM
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     param_setdefault(&theTrack.cfg, track.NumberOfPixels());
     EEPROM.put(eeadrInfo, theTrack.cfg); // Save immediately
 
@@ -823,7 +838,7 @@ ack_t manageSerialCommand()
   case ':': // Set board Unique Id
   {
     struct BoardInfo *info = &theTrack.cfg.info;
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     if (strlen(cmd + 1) > LEN_UID)
       return ack;
     strcpy(info->uid, cmd + 1);
@@ -835,7 +850,7 @@ ack_t manageSerialCommand()
   case '$': // Get Board UID
   {
     sprintf(txbuff, "%s%s%c", "$", theTrack.cfg.info.uid, EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
     ack.rp = NOTHING;
   }
   break;
@@ -843,7 +858,7 @@ ack_t manageSerialCommand()
   case '?': // Get Software Id
   {
     sprintf(txbuff, "%s%s%c", "?", softwareId, EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
     ack.rp = NOTHING;
   }
   break;
@@ -851,14 +866,14 @@ ack_t manageSerialCommand()
   case '%': // Get Software Version
   {
     sprintf(txbuff, "%s%s%c", "%", version, EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
     ack.rp = NOTHING;
   }
   break;
 
   case 'n': // Set "Network Race" mode (Relay race)
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     race.network_race = true;
     race.phase = COMPLETE; // Immediatly ends the current race (if any)
     race.winner = 0;       // Set a fake winner (used in Status=Complete by draw_winner())
@@ -881,7 +896,7 @@ ack_t manageSerialCommand()
             (int)cfg->track.kf, (int)(cfg->track.kf * 1000) % 1000, // std arduino sprintf() missing %f
             param_option_is_active(&theTrack.cfg, AUTOSTART_MODE_OPTION),
             EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
 
     sprintf(txbuff, "%s:%d,%d,%d,%d,%d%c", "QRP",
             cfg->ramp.init,
@@ -891,7 +906,7 @@ ack_t manageSerialCommand()
             // cfg->ramp.alwaysOn,
             param_option_is_active(&theTrack.cfg, SLOPE_MODE_OPTION),
             EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
 
     sprintf(txbuff, "%s:%d,%d,%d,%d%c", "QBT",
             cfg->battery.delta,
@@ -899,7 +914,7 @@ ack_t manageSerialCommand()
             cfg->battery.speed_boost_scaler,
             param_option_is_active(&theTrack.cfg, BATTERY_MODE_OPTION),
             EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
 
     sprintf(txbuff, "%s:%d,%d,%d,%d,%d,%d,%d,%d%c", "QRC",
             cfg->race.startline,
@@ -912,7 +927,7 @@ ack_t manageSerialCommand()
             // race.demo_mode,
             race.network_race,
             EOL);
-    serialCommand.sendCommand(txbuff);
+    sr.sendCommand(txbuff);
 
     ack.rp = NOTHING;
   }
@@ -920,7 +935,7 @@ ack_t manageSerialCommand()
 
   case 'W': // Write configuration to EEPROM
   {
-    ack.type = cmd[0];
+    ack.type = currentCommand;
     EEPROM.put(eeadrInfo, theTrack.cfg);
     ack.rp = OKK;
   }
@@ -947,6 +962,7 @@ void sendResponse(ack_t *ack)
     sprintf(txbuff, "%c%s%c", ack->type, ack->rp == OKK ? "OK" : "NOK", EOL);
   }
   serialCommand.sendCommand(txbuff);
+  serialCommand2.sendCommand(txbuff);
 }
 
 /*
@@ -964,6 +980,15 @@ void send_phase(int phase)
   // debug("send_phase");
   sprintf(txbuff, "R%d%c", phase, EOL);
   serialCommand.sendCommand(txbuff);
+  serialCommand2.sendCommand(txbuff);
+}
+
+void sendCountdown(int value)
+{
+  // debug("send_phase");
+  sprintf(txbuff, "c%d%c", value, EOL);
+  serialCommand.sendCommand(txbuff);
+  serialCommand2.sendCommand(txbuff);
 }
 
 /*
@@ -978,6 +1003,7 @@ boolean start_race_done()
     countdownNewPhase = false;
     startRaceDelay.start(CONTDOWN_PHASE_DURATION);
     strip_clear(&theTrack, true);
+    sendCountdown(countdownCurrentPhase);
     switch (countdownCurrentPhase)
     {
     case 1:
@@ -1160,6 +1186,7 @@ void run_racecycle(OneCar *car, int caridx)
     car->st = CAR_RACING;
     sprintf(txbuff, "r%d%c", caridx + 1, EOL);
     serialCommand.sendCommand(txbuff);
+    serialCommand2.sendCommand(txbuff);
   }
 
   if (car->st == CAR_GO_OUT)
@@ -1170,6 +1197,7 @@ void run_racecycle(OneCar *car, int caridx)
     byte const data = (caridx + 1) << 5 | (0b00011111 & speed);
     sprintf(txbuff, "s%c%c", data, EOL);
     serialCommand.sendCommand(txbuff);
+    serialCommand2.sendCommand(txbuff);
     ;
     car_resetPosition(car, true);
     car->trackID = NOT_TRACK;
@@ -1180,6 +1208,7 @@ void run_racecycle(OneCar *car, int caridx)
     car->trackID = NOT_TRACK;
     sprintf(txbuff, "w%d%c", caridx + 1, EOL);
     serialCommand.sendCommand(txbuff);
+    serialCommand2.sendCommand(txbuff);
 
     car_resetPosition(car, true);
   }
@@ -1224,9 +1253,10 @@ void print_cars_positions(OneCar *cars)
   for (int i = 0; i < race.numcars; ++i)
   {
     int const rpos = get_relative_position(&cars[i]);
-    sprintf(txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, (int)cars[i].battery, EOL);
+    sprintf(txbuff, "p%d,%s,%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, (int)cars[i].battery, EOL);
+    serialCommand2.sendCommand(txbuff);
     serialCommand.sendCommand(txbuff);
-    telemetry.Send(txbuff);
+    // telemetry.Send(txbuff);
   }
 }
 

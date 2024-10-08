@@ -10,21 +10,19 @@ SerialCommand::SerialCommand()
 /*
  *
  */
-SerialCommand::SerialCommand(char *buf, int blen, char eoc, Stream *stream, Stream *stream2)
+SerialCommand::SerialCommand(char *buf, int blen, char eoc, Stream *stream)
 {
-    init(buf, blen, eoc, stream);
-    _stream2 = stream2 == NULL ? &Serial1 : stream2;
+    _stream = stream;
+    init(buf, blen, eoc);
 }
 
 /*
  *
  */
-void SerialCommand::init(char *buf, int blen, char eoc, Stream *stream)
+void SerialCommand::init(char *buf, int blen, char eoc)
 {
     if (_initialized)
         return;
-
-    _stream = stream == NULL ? &Serial : stream;
     _buf = buf;
     _bufLen = blen;
     _bufIdx = 0;
@@ -82,6 +80,5 @@ void SerialCommand::sendCommand(char *str)
         }
     }
     _stream->write(str, dlen);
-    _stream2->write(str, dlen);
     return;
 }

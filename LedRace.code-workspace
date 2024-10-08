@@ -26,7 +26,8 @@
 			"format": "cpp",
 			"*.tcc": "cpp",
 			"istream": "cpp",
-			"system_error": "cpp"
+			"system_error": "cpp",
+			"sstream": "cpp"
 		}
 	}
 }
