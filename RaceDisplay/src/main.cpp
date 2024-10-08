@@ -44,7 +44,10 @@ void showLap()
 
 void parsePlayerLap(byte playerNumber, byte currentLap, byte position)
 {
-  Serial.println("Player " + String(playerNumber) + ": " + String(currentLap) + " - " + String(position) + "%");
+  // totalLaps => 100
+  // 1 => 100 / totalLaps
+  int percent = (((currentLap - 1) * 100.0) / totalLaps) + ((position * 1.0) / 10.0);
+  Serial.println("Player " + String(playerNumber) + ": " + String(currentLap) + " - " + String(percent) + "%");
 }
 
 void parsePlayerWin(byte playerNumber)
@@ -210,6 +213,14 @@ void loop()
         {
           totalLaps = stoi(stringParts[2]);
           Serial.println("Number of laps: " + String(totalLaps));
+        }
+        else if (oneString == "QRP")
+        {
+          // QRP,29,40,50,2,1
+        }
+        else if (oneString == "QBT")
+        {
+          // QBT,3,60,10,0
         }
         else if (oneString == "NOK")
         {
