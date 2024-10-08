@@ -40,13 +40,9 @@ void showLap()
   display.PlayerLap(1, lapNumber);
 }
 
-void parsePlayerLap(byte playerNumber)
+void parsePlayerLap(byte playerNumber, byte currentLap, byte position)
 {
-  if (stringParts.size() == 3)
-  {
-    String playerLap = stringParts[1].c_str();
-    Serial.println("Player " + String(playerNumber) + ": " + String(playerLap));
-  }
+  Serial.println("Player " + String(playerNumber) + ": " + String(currentLap) + " - " + String(position) + "%");
 }
 
 void parsePlayerWin(byte playerNumber)
@@ -134,24 +130,22 @@ void loop()
           QRC:1,5,1,1,0,0,0,0
           */
           break;
-        case 'c': // c1 (5) ... c5 (1)
-          break;
-        }
+        } // switch command
         if (oneString == "p1")
         {
-          parsePlayerLap(1);
+          parsePlayerLap(1, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "p2")
         {
-          parsePlayerLap(2);
+          parsePlayerLap(2, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "p3")
         {
-          parsePlayerLap(3);
+          parsePlayerLap(3, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "p4")
         {
-          parsePlayerLap(4);
+          parsePlayerLap(4, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "w1")
         {
@@ -168,6 +162,26 @@ void loop()
         else if (oneString == "w4")
         {
           parsePlayerWin(4);
+        }
+        else if (oneString == "c1")
+        {
+          Serial.println("5");
+        }
+        else if (oneString == "c2")
+        {
+          Serial.println("4");
+        }
+        else if (oneString == "c3")
+        {
+          Serial.println("3");
+        }
+        else if (oneString == "c4")
+        {
+          Serial.println("2");
+        }
+        else if (oneString == "c5")
+        {
+          Serial.println("1");
         }
         else if (oneString == "R3") // never seen
         {

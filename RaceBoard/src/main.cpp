@@ -884,7 +884,7 @@ ack_t manageSerialCommand()
   case 'Q': // Get current configuration Info
   {
     struct ConfigurationParameter const *cfg = &theTrack.cfg;
-    sprintf(txbuff, "%s:%d,%d,%d,%d,%d,%d,%d.%03d,%d.%03d,%d%c", "QTK",
+    sprintf(txbuff, "%s,%d,%d,%d,%d,%d,%d,%d.%03d,%d.%03d,%d%c", "QTK",
             cfg->track.nled_total,
             cfg->track.nled_main,
             cfg->track.nled_aux,
@@ -898,7 +898,7 @@ ack_t manageSerialCommand()
             EOL);
     sr.sendCommand(txbuff);
 
-    sprintf(txbuff, "%s:%d,%d,%d,%d,%d%c", "QRP",
+    sprintf(txbuff, "%s,%d,%d,%d,%d,%d%c", "QRP",
             cfg->ramp.init,
             cfg->ramp.center,
             cfg->ramp.end,
@@ -908,7 +908,7 @@ ack_t manageSerialCommand()
             EOL);
     sr.sendCommand(txbuff);
 
-    sprintf(txbuff, "%s:%d,%d,%d,%d%c", "QBT",
+    sprintf(txbuff, "%s,%d,%d,%d,%d%c", "QBT",
             cfg->battery.delta,
             cfg->battery.min,
             cfg->battery.speed_boost_scaler,
@@ -916,7 +916,7 @@ ack_t manageSerialCommand()
             EOL);
     sr.sendCommand(txbuff);
 
-    sprintf(txbuff, "%s:%d,%d,%d,%d,%d,%d,%d,%d%c", "QRC",
+    sprintf(txbuff, "%s,%d,%d,%d,%d,%d,%d,%d,%d%c", "QRC",
             cfg->race.startline,
             cfg->race.nlap,
             cfg->race.nrepeat,
