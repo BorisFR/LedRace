@@ -33,6 +33,8 @@ Display display = Display();
 *************************************************************************** */
 unsigned long last;
 byte countdownNumber;
+byte totalLeds = 0;
+byte totalLaps = 0;
 byte lapNumber;
 
 void showLap()
@@ -198,6 +200,16 @@ void loop()
         else if (oneString == "R8")
         {
           Serial.println("Race complete");
+        }
+        else if (oneString == "QTK")
+        {
+          totalLeds = stoi(stringParts[1]);
+          Serial.println("Number of LED: " + String(totalLeds));
+        }
+        else if (oneString == "QRC")
+        {
+          totalLaps = stoi(stringParts[2]);
+          Serial.println("Number of laps: " + String(totalLaps));
         }
         else if (oneString == "NOK")
         {
