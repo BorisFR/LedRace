@@ -31,6 +31,13 @@ Display display = Display();
 /* ***************************************************************************
   Race stuff
 *************************************************************************** */
+#include "enums.h"
+DISPLAY_STATES states = WELCOME;
+String version = "0.0.0";
+String uid = "xxx";
+
+OnePlayer players[4];
+
 unsigned long last;
 byte countdownNumber;
 byte totalLeds = 0;
@@ -100,6 +107,19 @@ void loop()
   //  tft.setTextColor(63 << 5, 0);
   //  tft.drawCentreString("MATRIX", TFT_WIDTH / 2, TFT_HEIGHT / 2, 4);
   // return;
+
+  while (Serial.available() > 0)
+  {
+    incomingByte = Serial.read();
+    switch (incomingByte)
+    {
+    case '5':
+      break;
+    default:
+      Serial.println(incomingByte);
+      break;
+    }
+  }
   while (Serial2.available() > 0)
   {
     incomingByte = Serial2.read();
@@ -122,10 +142,14 @@ void loop()
         switch (commandReceived)
         {
         case '$': // $ADIMAKER
+          uid = oneString.substr(1).c_str();
+          display.ShowName(uid);
           break;
         case '?': // ?A2P0
           break;
         case '%': // %1.2.0
+          version = oneString.substr(1).c_str();
+          display.ShowVersion(version);
           break;
         case 'Q': // Q...
                   /*
@@ -170,23 +194,27 @@ void loop()
         }
         else if (oneString == "c1")
         {
-          Serial.println("5");
+          // Serial.println("5");
+          display.Countdown(2);
         }
         else if (oneString == "c2")
         {
-          Serial.println("4");
+          // Serial.println("4");
+          display.Countdown(1);
         }
         else if (oneString == "c3")
         {
-          Serial.println("3");
+          // Serial.println("3");
+          display.Countdown(0);
         }
         else if (oneString == "c4")
         {
-          Serial.println("2");
+          // Serial.println("2");
+          // display.Countdown(0);
         }
         else if (oneString == "c5")
         {
-          Serial.println("1");
+          // Serial.println("1");
         }
         else if (oneString == "R3") // never seen
         {
@@ -194,11 +222,13 @@ void loop()
         }
         else if (oneString == "R4")
         {
-          Serial.println("Countdown started");
+          // Serial.println("Countdown started");
+          display.Countdown(3);
         }
         else if (oneString == "R5")
         {
-          Serial.println("GO!");
+          // Serial.println("GO!");
+          display.Clear();
         }
         else if (oneString == "R8")
         {

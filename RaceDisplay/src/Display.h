@@ -30,12 +30,15 @@ public:
     Display();
     void Setup();
     void Clear();
+    void ShowVersion(String value);
+    void ShowName(String value);
     void Countdown(byte value);
     void TotalLap(byte value);
     void PlayerLap(byte player, byte value);
 
 private:
     TFT_eSPI display = TFT_eSPI();
+    void PrintWithShadow(String text, int x, int y, uint16_t color);
 };
 
 #endif

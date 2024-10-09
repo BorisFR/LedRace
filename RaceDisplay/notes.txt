@@ -1,0 +1,55 @@
+
+states
+- 1st waiting players / welcome
+- coutdown from 3 to GO
+- race mode
+- winner
+- waiting players
+
+things to display
+
+nb of total laps
+time per lap
+countdown
+waiting players
+
+for each player, color RED & BLUE
+
+Player X : Place 1st or 2nd
+% progress on total run
+time for each lap
+
+
+     Player 1
+***    1 st    ***
++----------------+
+|#############   |  
++----------------+
+5 => --:--:--
+4 => 00:00:15.120
+3 => 00:00:16.596
+2 => 00:00:17.218
+1 => 00:00:18.042
+
+     Player 2
+       2 st
++----------------+
+|#############   |  
++----------------+
+5 => --:--:--
+4 => 00:00:15.120
+3 => 00:00:16.596
+2 => 00:00:17.218
+1 => 00:00:18.042
+
+
+
+
+1
+2
+3
+4
+5
+6
+7
+8
