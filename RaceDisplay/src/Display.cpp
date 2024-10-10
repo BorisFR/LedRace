@@ -142,7 +142,7 @@ void Display::ShowWinner(OnePlayer player, bool reverseColor)
 {
     uint16_t color = TFT_YELLOW;
     if (reverseColor)
-        color = TFT_CYAN;
+        color = TFT_DARKCYAN;
     display.fillCircle(player.positionX + RANK_WINNER_X, player.positionY + RANK_WINNER_Y, RANK_WINNER_RADIUS, color);
     ShowRank(player, false);
 }

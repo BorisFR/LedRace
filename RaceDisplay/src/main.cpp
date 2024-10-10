@@ -62,9 +62,15 @@ unsigned long last;
 byte totalLeds = 0;
 byte totalLaps = 0;
 byte countdown;
+bool showingWinner = false;
+unsigned long blinkingWinner;
+#define BLINK_WINNER_DELAY 200
+uint8_t playerWinner;
+bool winnerInverse = false;
 
 void raceInit()
 {
+  showingWinner = false;
   for (byte i = 0; i < MAX_PLAYER_NUMBER; i++)
   {
     players[i].isWinner = false;
@@ -98,6 +104,7 @@ void ledRaceSetup()
 
 void raceStart()
 {
+  showingWinner = false;
   display.Clear();
   for (byte i = 0; i < numberOfPlayers; i++)
   {
@@ -190,6 +197,9 @@ void parsePlayerWin(byte playerNumber)
 {
   parsePlayerLap(playerNumber, totalLaps + 1, 0);
   display.ShowWinner(players[playerNumber]);
+  showingWinner = true;
+  playerWinner = playerNumber;
+  blinkingWinner = millis();
   // Serial.println("Winner: " + String(playerNumber));
 }
 
@@ -206,8 +216,18 @@ void setup()
 
 void loop()
 {
+  if (showingWinner)
+  {
+    if (millis() - blinkingWinner > BLINK_WINNER_DELAY)
+    {
+      display.ShowWinner(players[playerWinner], winnerInverse);
+      winnerInverse = !winnerInverse;
+      blinkingWinner = millis();
+    }
+  }
   if (millis() - last > TIMEOUT_RACE_TO_TITLE)
   {
+    showingWinner = false;
     display.ShowTitle();
     discoverLedRace();
     last = millis();
@@ -310,6 +330,7 @@ void loop()
         }
         else if (oneString == "c1")
         {
+          showingWinner = false;
           countdown = 6;
           display.Countdown(countdown--);
         }
