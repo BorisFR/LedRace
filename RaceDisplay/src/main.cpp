@@ -20,6 +20,21 @@ byte bufferPosition = 0;
 char sendbuffer[TX_COMMAND_BUFLEN];
 char commandReceived;
 
+void discoverLedRace()
+{
+  sprintf(sendbuffer, "#%c", EOL);
+  Serial2.write(sendbuffer, 2);
+  sprintf(sendbuffer, "$%c", EOL);
+  Serial2.write(sendbuffer, 2);
+  sprintf(sendbuffer, "?%c", EOL);
+  Serial2.write(sendbuffer, 2);
+  sprintf(sendbuffer, "\%%c", EOL);
+  Serial2.write(sendbuffer, 2);
+  sprintf(sendbuffer, "Q%c", EOL);
+  Serial2.write(sendbuffer, 2);
+  Serial2.write(sendbuffer, 2);
+}
+
 /* ***************************************************************************
   Display stuff
 *************************************************************************** */
@@ -35,30 +50,140 @@ Display display = Display();
 DISPLAY_STATES states = WELCOME;
 String version = "0.0.0";
 String uid = "xxx";
+uint8_t numberOfPlayers = 2; // MAX_PLAYER_NUMBER
 
-OnePlayer players[4];
-
+OnePlayer players[MAX_PLAYER_NUMBER];
+int percent;
+bool refresh = false;
 unsigned long last;
-byte countdownNumber;
 byte totalLeds = 0;
 byte totalLaps = 0;
-byte lapNumber;
 
-void showLap()
+void raceInit()
 {
-  display.PlayerLap(1, lapNumber);
+  for (byte i = 0; i < MAX_PLAYER_NUMBER; i++)
+  {
+    players[i].isWinner = false;
+    players[i].lap = 1;
+    players[i].percent = 0;
+    players[i].percentTotal = 0;           //(i + 1) * 50;
+    players[i].best = 1000 * 60 * 60 * 24; // 1 day :)
+    players[i].bestLap = "--:--.---";
+    players[i].total = 0;
+    players[i].totalLap = players[i].bestLap;
+    players[i].rank = 0;
+    players[i].startLap = millis();
+    players[i].displayInit = false;
+  }
+}
+
+void ledRaceSetup()
+{
+  for (byte i = 0; i < MAX_PLAYER_NUMBER; i++)
+  {
+    players[i] = OnePlayer();
+    players[i].positionX = PLAYER_PADDING_X;
+    players[i].positionY = DISPLAY_PLAYERS_PADDING_Y + i * (DISPLAY_PLAYER_HEIGHT + DISPLAY_PLAYERS_DELTA_Y);
+  }
+  players[0].color = TFT_RED;
+  players[1].color = TFT_BLUE;
+  players[2].color = TFT_GREEN;
+  players[3].color = TFT_WHITE;
+  raceInit();
+}
+
+void raceStart()
+{
+  display.Clear();
+  for (byte i = 0; i < numberOfPlayers; i++)
+  {
+    display.ShowPlayer(players[i]);
+  }
+}
+
+String on2(uint8_t value)
+{
+  if (value > 9)
+    return String(value);
+  return "0" + String(value);
+}
+
+String on3(uint16_t value)
+{
+  if (value > 99)
+    return String(value);
+  if (value > 9)
+    return "0" + String(value);
+  return "00" + String(value);
+}
+
+String millisToString(unsigned long value)
+{
+  uint16_t seconds = value / 1000;
+  int milliseconds = value - seconds * 1000;
+  uint16_t minutes = seconds / 60;
+  seconds = seconds - minutes * 60;
+  return on2(minutes) + ":" + on2(seconds) + "." + on3(milliseconds);
+}
+
+void ranking()
+{
+  if (players[0].percentTotal > players[1].percentTotal)
+  {
+    if (players[0].rank == 1)
+      return;
+    players[0].rank = 1;
+    players[1].rank = 2;
+  }
+  else
+  {
+    if (players[1].rank == 1)
+      return;
+    players[1].rank = 1;
+    players[0].rank = 2;
+  }
+  display.ShowRank(players[0], players[1]);
 }
 
 void parsePlayerLap(byte playerNumber, byte currentLap, byte position)
 {
-  // totalLaps => 100
-  // 1 => 100 / totalLaps
-  int percent = (((currentLap - 1) * 100.0) / totalLaps) + ((position * 1.0) / 10.0);
-  Serial.println("Player " + String(playerNumber) + ": " + String(currentLap) + " - " + String(percent) + "%");
+  if (players[playerNumber].lap != currentLap)
+  {
+    unsigned long time = millis();
+    players[playerNumber].lap = currentLap;
+    unsigned long duration = time - players[playerNumber].startLap;
+    players[playerNumber].total += duration;
+    if (players[playerNumber].best > duration)
+    {
+      players[playerNumber].best = duration;
+      /*uint16_t seconds = duration / 1000;
+      int milliseconds = duration - seconds * 1000;
+      uint16_t minutes = seconds / 60;
+      seconds = seconds - minutes * 60;
+      players[playerNumber].bestLap = on2(minutes) + ":" + on2(seconds) + "." + on3(milliseconds);*/
+      players[playerNumber].bestLap = millisToString(duration);
+      display.ShowBest(players[playerNumber]);
+    }
+    players[playerNumber].totalLap = millisToString(players[playerNumber].total);
+    display.ShowTotal(players[playerNumber]);
+    players[playerNumber].startLap = millis();
+  }
+  if (players[playerNumber].percent != position)
+  {
+    players[playerNumber].percent = position;
+    // totalLaps => 100
+    // 1 => 100 / totalLaps
+    percent = (((currentLap - 1) * 100.0) / totalLaps) + ((position * 1.0) / 10.0);
+    players[playerNumber].percentTotal = percent;
+    display.ShowPercent(players[playerNumber]);
+    ranking();
+  }
+  // Serial.println("Player " + String(playerNumber) + ": " + String(currentLap) + " - " + String(percent) + "%");
 }
 
 void parsePlayerWin(byte playerNumber)
 {
+  parsePlayerLap(playerNumber, totalLaps + 1, 0);
   Serial.println("Winner: " + String(playerNumber));
 }
 
@@ -68,35 +193,15 @@ void setup()
   Serial2.begin(SERIAL_BAUD);
   display.Setup();
   delay(1000);
-  sprintf(sendbuffer, "#%c", EOL);
-  Serial2.write(sendbuffer, 2);
-  sprintf(sendbuffer, "$%c", EOL);
-  Serial2.write(sendbuffer, 2);
-  sprintf(sendbuffer, "?%c", EOL);
-  Serial2.write(sendbuffer, 2);
-  sprintf(sendbuffer, "\%%c", EOL);
-  Serial2.write(sendbuffer, 2);
-  sprintf(sendbuffer, "Q%c", EOL);
-  Serial2.write(sendbuffer, 2);
-  Serial2.write(sendbuffer, 2);
-
-  countdownNumber = 0;
-  lapNumber = 20;
-  showLap();
+  ledRaceSetup();
+  discoverLedRace();
 }
 
 void loop()
 {
   if (millis() - last > 700)
   {
-    if (countdownNumber > 0)
-      countdownNumber--;
-    else
-      countdownNumber = 5;
-    // display.Clear();
-    // display.Countdown(countdownNumber);
     last = millis();
-    // showLap();
   }
   // display.setCursor(0, 0, 2);
   //  Set the font colour to be white with a black background, set text size multiplier to 1
@@ -162,35 +267,37 @@ void loop()
         } // switch command
         if (oneString == "p1")
         {
-          parsePlayerLap(1, stoi(stringParts[2]), stoi(stringParts[3]));
+          parsePlayerLap(0, stoi(stringParts[2]), stoi(stringParts[3]));
+          // Serial.println(stoi(stringParts[2]));
+          // Serial.println(stoi(stringParts[3]));
         }
         else if (oneString == "p2")
         {
-          parsePlayerLap(2, stoi(stringParts[2]), stoi(stringParts[3]));
+          parsePlayerLap(1, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "p3")
         {
-          parsePlayerLap(3, stoi(stringParts[2]), stoi(stringParts[3]));
+          parsePlayerLap(2, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "p4")
         {
-          parsePlayerLap(4, stoi(stringParts[2]), stoi(stringParts[3]));
+          parsePlayerLap(3, stoi(stringParts[2]), stoi(stringParts[3]));
         }
         else if (oneString == "w1")
         {
-          parsePlayerWin(1);
+          parsePlayerWin(0);
         }
         else if (oneString == "w2")
         {
-          parsePlayerWin(2);
+          parsePlayerWin(1);
         }
         else if (oneString == "w3")
         {
-          parsePlayerWin(3);
+          parsePlayerWin(2);
         }
         else if (oneString == "w4")
         {
-          parsePlayerWin(4);
+          parsePlayerWin(3);
         }
         else if (oneString == "c1")
         {
@@ -228,7 +335,8 @@ void loop()
         else if (oneString == "R5")
         {
           // Serial.println("GO!");
-          display.Clear();
+          raceInit();
+          raceStart();
         }
         else if (oneString == "R8")
         {
@@ -258,7 +366,15 @@ void loop()
         }
         else
         {
-          Serial.println(txtBuffer);
+          message = oneString.c_str();
+          if (message.indexOf("Hello (") == 0)
+          {
+            discoverLedRace();
+          }
+          else
+          {
+            Serial.println(txtBuffer);
+          }
         }
         // message = "";
       } // incomingByte == EOL

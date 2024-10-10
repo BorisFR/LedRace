@@ -10,6 +10,7 @@ void Display::Setup()
     display.setFreeFont(&Roboto_Black_30);
     PrintWithShadow("LED", TFT_WIDTH / 2, 3 * TFT_HEIGHT / 8, TFT_RED);
     PrintWithShadow("RACE", TFT_WIDTH / 2, 5 * TFT_HEIGHT / 8, TFT_BLUE);
+    progressBarWidth = DISPLAY_PLAYER_WIDTH - 2 * (PROGRESS_BAR_PADDING_X + PROGRESS_BARFILL_PADDING);
 }
 
 void Display::ShowName(String value)
@@ -63,6 +64,62 @@ void Display::Countdown(byte value)
         display.setTextDatum(TC_DATUM);
         display.drawString(String(value), TFT_WIDTH / 2, COUNTDOWN_POS_Y);
     }
+}
+
+void Display::ShowPercent(OnePlayer player)
+{
+    display.fillRect(player.positionX + PROGRESS_BAR_PADDING_X + PROGRESS_BARFILL_PADDING, player.positionY + PROGRESS_BAR_Y + PROGRESS_BARFILL_PADDING, player.percentTotal * progressBarWidth / 100, PROGRESS_BAR_PERCENT_HEIGHT, player.color);
+    if (player.percentTotal < 99)
+    {
+        display.fillRect(player.positionX + PROGRESS_BAR_PADDING_X + PROGRESS_BARFILL_PADDING + player.percentTotal * progressBarWidth / 100, player.positionY + PROGRESS_BAR_Y + PROGRESS_BARFILL_PADDING, (100 - player.percentTotal) * progressBarWidth / 100, PROGRESS_BAR_PERCENT_HEIGHT, TFT_BLACK);
+    }
+}
+
+void Display::ShowBest(OnePlayer player)
+{
+    display.setTextFont(2);
+    display.fillRect(player.positionX + BEST_X + BEST_PADDING_X, player.positionY + BEST_Y, TIME_WIDTH, TIME_HEIGHT, TFT_BLACK);
+    display.drawString(player.bestLap, player.positionX + BEST_X + BEST_PADDING_X, player.positionY + BEST_Y);
+}
+
+void Display::ShowTotal(OnePlayer player)
+{
+    display.setTextFont(2);
+    display.fillRect(player.positionX + TOTAL_X + BEST_PADDING_X, player.positionY + TOTAL_Y, TIME_WIDTH, TIME_HEIGHT, TFT_BLACK);
+    display.drawString(player.totalLap, player.positionX + TOTAL_X + BEST_PADDING_X, player.positionY + TOTAL_Y);
+}
+
+void Display::ShowPlayer(OnePlayer player)
+{
+    if (!player.displayInit)
+    {
+        player.displayInit = true;
+        // round rectangle around the player
+        display.fillRoundRect(player.positionX, player.positionY, DISPLAY_PLAYER_WIDTH, DISPLAY_PLAYER_HEIGHT, DISPLAY_PLAYER_ROUND_RADIUS, player.color);
+        display.fillRoundRect(player.positionX + DISPLAY_PLAYER_ROUND_RADIUS / 2, player.positionY + DISPLAY_PLAYER_ROUND_RADIUS / 2, DISPLAY_PLAYER_WIDTH - DISPLAY_PLAYER_ROUND_RADIUS, DISPLAY_PLAYER_HEIGHT - DISPLAY_PLAYER_ROUND_RADIUS, DISPLAY_PLAYER_ROUND_RADIUS, TFT_BLACK);
+        // progress bar for % complete
+        display.drawRect(player.positionX + PROGRESS_BAR_PADDING_X, player.positionY + PROGRESS_BAR_Y, DISPLAY_PLAYER_WIDTH - PROGRESS_BAR_PADDING_X * 2, PROGRESS_BAR_HEIGHT, TFT_YELLOW);
+        // display.setFreeFont(&FreeMono9pt7b);
+        display.setTextFont(2);
+        display.setTextDatum(TL_DATUM);
+        display.setTextColor(TFT_WHITE);
+        // display.drawString("Best:", player.positionX + BEST_X, player.positionY + BEST_Y);
+    }
+    ShowPercent(player);
+    ShowBest(player);
+    ShowTotal(player);
+}
+
+void Display::ShowRank(OnePlayer player1, OnePlayer player2)
+{
+    display.setFreeFont(&Roboto_Black_30);
+    display.setTextDatum(TL_DATUM);
+    display.fillRect(player1.positionX + RANK_X, player1.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
+    display.fillRect(player2.positionX + RANK_X, player2.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
+    display.setTextColor(player1.color);
+    display.drawString(String(player1.rank), player1.positionX + RANK_X, player1.positionY + RANK_Y);
+    display.setTextColor(player2.color);
+    display.drawString(String(player2.rank), player2.positionX + RANK_X, player2.positionY + RANK_Y);
 }
 
 void Display::TotalLap(byte value)

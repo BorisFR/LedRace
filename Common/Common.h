@@ -4,6 +4,8 @@
 
 #define SERIAL_BAUD 115200
 
+#define MAX_PLAYER_NUMBER 4
+
 #define EOL '\n' // End of Command char used in Protocol
 
 #define REC_COMMAND_BUFLEN 32 // received command buffer size

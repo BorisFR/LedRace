@@ -21,8 +21,32 @@ VCC   orange  5V    rouge
 #include <SPI.h>
 #include "Orbitron-Bold-80.h"
 #include "Roboto_Black_30.h"
+#include "enums.h"
 
 #define COUNTDOWN_POS_Y 30
+#define PLAYER_PADDING_X 48
+#define DISPLAY_PLAYERS_PADDING_Y 10
+#define DISPLAY_PLAYERS_DELTA_Y 10
+
+#define DISPLAY_PLAYER_ROUND_RADIUS 8
+#define PROGRESS_BAR_PADDING_X 8
+#define PROGRESS_BAR_Y 8
+#define PROGRESS_BAR_HEIGHT 12
+#define PROGRESS_BARFILL_PADDING 1
+#define PROGRESS_BAR_PERCENT_HEIGHT 10
+#define DISPLAY_PLAYER_WIDTH 80 // TFT_WIDTH - PLAYER_PADDING_X * 2
+#define DISPLAY_PLAYER_HEIGHT 58
+#define BEST_X 4
+#define BEST_PADDING_X 4
+#define BEST_Y PROGRESS_BAR_Y + PROGRESS_BAR_HEIGHT + 2
+#define TIME_WIDTH 64
+#define TIME_HEIGHT 14
+#define TOTAL_X BEST_X
+#define TOTAL_Y BEST_Y + TIME_HEIGHT
+#define RANK_X -30
+#define RANK_Y 10
+#define RANK_WIDTH 20
+#define RANK_HEIGHT 25
 
 class Display
 {
@@ -33,12 +57,18 @@ public:
     void ShowVersion(String value);
     void ShowName(String value);
     void Countdown(byte value);
+    void ShowPlayer(OnePlayer player);
     void TotalLap(byte value);
+    void ShowPercent(OnePlayer player);
+    void ShowBest(OnePlayer player);
+    void ShowTotal(OnePlayer player);
+    void ShowRank(OnePlayer player1, OnePlayer player2);
     void PlayerLap(byte player, byte value);
 
 private:
     TFT_eSPI display = TFT_eSPI();
     void PrintWithShadow(String text, int x, int y, uint16_t color);
+    uint16_t progressBarWidth;
 };
 
 #endif
