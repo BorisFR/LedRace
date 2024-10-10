@@ -47,6 +47,9 @@ Display display = Display();
   Race stuff
 *************************************************************************** */
 #include "enums.h"
+
+#define TIMEOUT_RACE_TO_TITLE 1000 * 60
+
 DISPLAY_STATES states = WELCOME;
 String version = "0.0.0";
 String uid = "xxx";
@@ -201,8 +204,10 @@ void setup()
 
 void loop()
 {
-  if (millis() - last > 700)
+  if (millis() - last > TIMEOUT_RACE_TO_TITLE)
   {
+    display.ShowTitle();
+    discoverLedRace();
     last = millis();
   }
   // display.setCursor(0, 0, 2);

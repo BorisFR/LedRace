@@ -83,6 +83,8 @@ void Display::ShowPercent(OnePlayer player)
 void Display::ShowBest(OnePlayer player)
 {
     display.setTextFont(2);
+    display.setTextColor(TFT_WHITE);
+    display.setTextDatum(TL_DATUM);
     display.fillRect(player.positionX + BEST_X + BEST_PADDING_X, player.positionY + BEST_Y, TIME_WIDTH, TIME_HEIGHT, TFT_BLACK);
     display.drawString(player.bestLap, player.positionX + BEST_X + BEST_PADDING_X, player.positionY + BEST_Y);
 }
@@ -90,6 +92,8 @@ void Display::ShowBest(OnePlayer player)
 void Display::ShowTotal(OnePlayer player)
 {
     display.setTextFont(2);
+    display.setTextColor(TFT_WHITE);
+    display.setTextDatum(TL_DATUM);
     display.fillRect(player.positionX + TOTAL_X + BEST_PADDING_X, player.positionY + TOTAL_Y, TIME_WIDTH, TIME_HEIGHT, TFT_BLACK);
     display.drawString(player.totalLap, player.positionX + TOTAL_X + BEST_PADDING_X, player.positionY + TOTAL_Y);
 }
@@ -104,11 +108,6 @@ void Display::ShowPlayer(OnePlayer player)
         display.fillRoundRect(player.positionX + DISPLAY_PLAYER_ROUND_RADIUS / 2, player.positionY + DISPLAY_PLAYER_ROUND_RADIUS / 2, DISPLAY_PLAYER_WIDTH - DISPLAY_PLAYER_ROUND_RADIUS, DISPLAY_PLAYER_HEIGHT - DISPLAY_PLAYER_ROUND_RADIUS, DISPLAY_PLAYER_ROUND_RADIUS, TFT_BLACK);
         // progress bar for % complete
         display.drawRect(player.positionX + PROGRESS_BAR_PADDING_X, player.positionY + PROGRESS_BAR_Y, DISPLAY_PLAYER_WIDTH - PROGRESS_BAR_PADDING_X * 2, PROGRESS_BAR_HEIGHT, TFT_YELLOW);
-        // display.setFreeFont(&FreeMono9pt7b);
-        display.setTextFont(2);
-        display.setTextDatum(TL_DATUM);
-        display.setTextColor(TFT_WHITE);
-        // display.drawString("Best:", player.positionX + BEST_X, player.positionY + BEST_Y);
     }
     ShowPercent(player);
     ShowBest(player);
