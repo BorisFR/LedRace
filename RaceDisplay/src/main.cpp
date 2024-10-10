@@ -146,7 +146,8 @@ void ranking()
     players[1].rank = 1;
     players[0].rank = 2;
   }
-  display.ShowRank(players[0], players[1]);
+  display.ShowRank(players[0]);
+  display.ShowRank(players[1]);
 }
 
 void parsePlayerLap(byte playerNumber, byte currentLap, byte position)
@@ -188,7 +189,8 @@ void parsePlayerLap(byte playerNumber, byte currentLap, byte position)
 void parsePlayerWin(byte playerNumber)
 {
   parsePlayerLap(playerNumber, totalLaps + 1, 0);
-  Serial.println("Winner: " + String(playerNumber));
+  display.ShowWinner(players[playerNumber]);
+  // Serial.println("Winner: " + String(playerNumber));
 }
 
 void setup()

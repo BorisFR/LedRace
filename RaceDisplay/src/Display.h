@@ -47,6 +47,9 @@ VCC   orange  5V    rouge
 #define RANK_Y 10
 #define RANK_WIDTH 20
 #define RANK_HEIGHT 25
+#define RANK_WINNER_X RANK_X + 8  //+ RANK_WIDTH / 2
+#define RANK_WINNER_Y RANK_Y + 14 //+ RANK_WIDTH / 2
+#define RANK_WINNER_RADIUS 20
 
 class Display
 {
@@ -59,12 +62,12 @@ public:
     void ShowName(String value);
     void Countdown(byte value);
     void ShowPlayer(OnePlayer player);
-    void TotalLap(byte value);
     void ShowPercent(OnePlayer player);
     void ShowBest(OnePlayer player);
     void ShowTotal(OnePlayer player);
-    void ShowRank(OnePlayer player1, OnePlayer player2);
-    void PlayerLap(byte player, byte value);
+    void ShowWinner(OnePlayer player, bool reverseColor = false);
+    // void ShowRank(OnePlayer player1, OnePlayer player2);
+    void ShowRank(OnePlayer player, bool clear = true);
 
 private:
     TFT_eSPI display = TFT_eSPI();

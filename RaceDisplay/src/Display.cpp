@@ -114,26 +114,35 @@ void Display::ShowPlayer(OnePlayer player)
     ShowTotal(player);
 }
 
-void Display::ShowRank(OnePlayer player1, OnePlayer player2)
+void Display::ShowRank(OnePlayer player, bool clear)
 {
     display.setFreeFont(&Roboto_Black_30);
     display.setTextDatum(TL_DATUM);
-    display.fillRect(player1.positionX + RANK_X, player1.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
-    display.fillRect(player2.positionX + RANK_X, player2.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
-    display.setTextColor(player1.color);
-    display.drawString(String(player1.rank), player1.positionX + RANK_X, player1.positionY + RANK_Y);
-    display.setTextColor(player2.color);
-    display.drawString(String(player2.rank), player2.positionX + RANK_X, player2.positionY + RANK_Y);
+    if (clear)
+        display.fillRect(player.positionX + RANK_X, player.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
+    display.setTextColor(player.color);
+    display.drawString(String(player.rank), player.positionX + RANK_X, player.positionY + RANK_Y);
 }
 
-void Display::TotalLap(byte value)
-{
-    display.setFreeFont(&Roboto_Black_30);
-    display.setTextDatum(TL_DATUM);
-    display.setTextColor(TFT_CYAN);
-    display.drawString("LAP: " + String(value), 6, 6);
-}
+// void Display::ShowRank(OnePlayer player1, OnePlayer player2)
+//{
+//   PrintRank(player1);
+// PrintRank(player2);
+/*display.setFreeFont(&Roboto_Black_30);
+display.setTextDatum(TL_DATUM);
+display.fillRect(player1.positionX + RANK_X, player1.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
+display.fillRect(player2.positionX + RANK_X, player2.positionY + RANK_Y, RANK_WIDTH, RANK_HEIGHT, TFT_BLACK);
+display.setTextColor(player1.color);
+display.drawString(String(player1.rank), player1.positionX + RANK_X, player1.positionY + RANK_Y);
+display.setTextColor(player2.color);
+display.drawString(String(player2.rank), player2.positionX + RANK_X, player2.positionY + RANK_Y);*/
+//}
 
-void Display::PlayerLap(byte player, byte value)
+void Display::ShowWinner(OnePlayer player, bool reverseColor)
 {
+    uint16_t color = TFT_YELLOW;
+    if (reverseColor)
+        color = TFT_CYAN;
+    display.fillCircle(player.positionX + RANK_WINNER_X, player.positionY + RANK_WINNER_Y, RANK_WINNER_RADIUS, color);
+    ShowRank(player, false);
 }
