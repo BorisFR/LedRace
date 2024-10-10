@@ -1002,41 +1002,47 @@ boolean start_race_done()
     // debug("start_race_done: new phase");
     countdownNewPhase = false;
     startRaceDelay.start(CONTDOWN_PHASE_DURATION);
-    strip_clear(&theTrack, true);
     sendCountdown(countdownCurrentPhase);
     switch (countdownCurrentPhase)
     {
     case 1:
       // debug("start_race_done: 1");
+      strip_clear(&theTrack, true);
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE, track.Color(255, 0, 0));
-      break;
-    case 2:
-      // debug("start_race_done: 2");
-      audio.PlayCountdown((countdown)countdownCurrentPhase);
-      track.SetPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
-      track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
+      track.Show();
       break;
     case 3:
+      // debug("start_race_done: 2");
+      audio.PlayCountdown((countdown)countdownCurrentPhase);
+      strip_clear(&theTrack, true);
+      track.SetPixelColor(LED_SEMAPHORE, track.Color(0, 0, 0));
+      track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(255, 255, 0));
+      track.Show();
+      break;
+    case 5:
       // debug("start_race_done: 3");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
+      strip_clear(&theTrack, true);
       track.SetPixelColor(LED_SEMAPHORE - 1, track.Color(0, 0, 0));
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 255, 0));
+      track.Show();
       break;
-    case 4:
+    case 7:
       // debug("start_race_done: 4");
       startRaceDelay.start(CONTDOWN_STARTSOUND_DURATION);
+      strip_clear(&theTrack, true);
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       track.SetPixelColor(LED_SEMAPHORE - 2, track.Color(0, 0, 0));
       track.SetPixelColor(0, track.Color(255, 255, 255));
+      track.Show();
       break;
-    case 5:
+    case 9:
       // debug("start_race_done: 5");
       audio.PlayCountdown((countdown)countdownCurrentPhase);
       countdownReset(); // reset for next countdown
       return (true);
     }
-    track.Show();
   }
   if (startRaceDelay.elapsed())
   {

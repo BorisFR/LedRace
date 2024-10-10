@@ -6,6 +6,11 @@ void Display::Setup()
 {
     display.init();
     display.setRotation(2);
+    ShowTitle();
+}
+
+void Display::ShowTitle()
+{
     Clear();
     display.setFreeFont(&Roboto_Black_30);
     PrintWithShadow("LED", TFT_WIDTH / 2, 3 * TFT_HEIGHT / 8, TFT_RED);

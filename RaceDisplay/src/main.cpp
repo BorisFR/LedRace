@@ -58,6 +58,7 @@ bool refresh = false;
 unsigned long last;
 byte totalLeds = 0;
 byte totalLaps = 0;
+byte countdown;
 
 void raceInit()
 {
@@ -194,6 +195,7 @@ void setup()
   display.Setup();
   delay(1000);
   ledRaceSetup();
+  display.ShowTitle();
   discoverLedRace();
 }
 
@@ -301,27 +303,40 @@ void loop()
         }
         else if (oneString == "c1")
         {
-          // Serial.println("5");
-          display.Countdown(2);
+          countdown = 6;
+          display.Countdown(countdown--);
         }
         else if (oneString == "c2")
         {
-          // Serial.println("4");
-          display.Countdown(1);
+          display.Countdown(countdown--);
         }
         else if (oneString == "c3")
         {
-          // Serial.println("3");
-          display.Countdown(0);
+          display.Countdown(countdown--);
         }
         else if (oneString == "c4")
         {
-          // Serial.println("2");
-          // display.Countdown(0);
+          display.Countdown(countdown--);
         }
         else if (oneString == "c5")
         {
-          // Serial.println("1");
+          display.Countdown(countdown--);
+        }
+        else if (oneString == "c6")
+        {
+          display.Countdown(countdown--);
+        }
+        else if (oneString == "c7")
+        {
+          display.Countdown(countdown--);
+        }
+        else if (oneString == "c8")
+        {
+          // display.Countdown(countdown--);
+        }
+        else if (oneString == "c9")
+        {
+          // display.Countdown(0);
         }
         else if (oneString == "R3") // never seen
         {
@@ -369,6 +384,7 @@ void loop()
           message = oneString.c_str();
           if (message.indexOf("Hello (") == 0)
           {
+            display.ShowTitle();
             discoverLedRace();
           }
           else

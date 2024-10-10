@@ -54,6 +54,7 @@ public:
     Display();
     void Setup();
     void Clear();
+    void ShowTitle();
     void ShowVersion(String value);
     void ShowName(String value);
     void Countdown(byte value);

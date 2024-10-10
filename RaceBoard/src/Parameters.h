@@ -19,7 +19,7 @@ enum countdownFrequency
 };
 enum delaySetup
 {                                      // If you have a custom hardware (i.e not the OLR PCB),
-    CONTDOWN_PHASE_DURATION = 1500,    // (mSec)
+    CONTDOWN_PHASE_DURATION = 750,     // (mSec) 1500
     CONTDOWN_STARTSOUND_DURATION = 40, // (mSec)
     WINNER_AUDIO_DELAY = 200,          // (mSec)
     WINNER_SHOW_DELAY = 20,            // (mSec)
