@@ -48,7 +48,7 @@ Display display = Display();
 *************************************************************************** */
 #include "enums.h"
 
-#define TIMEOUT_RACE_TO_TITLE 1000 * 60
+#define TIMEOUT_RACE_TO_TITLE 1000 * 60 * 2
 
 DISPLAY_STATES states = WELCOME;
 String version = "0.0.0";
