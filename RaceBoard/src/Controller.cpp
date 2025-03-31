@@ -8,11 +8,14 @@ void Controller::Setup()
     DIGITAL_CTRL[CTRL_2] = DIG_CTRL_2_PIN;
     DIGITAL_CTRL[CTRL_3] = DIG_CTRL_3_PIN;
     DIGITAL_CTRL[CTRL_4] = DIG_CTRL_4_PIN;
-
-    pinMode(DIG_CTRL_1_PIN, INPUT_PULLUP); // pull up in adc
-    pinMode(DIG_CTRL_2_PIN, INPUT_PULLUP);
-    pinMode(DIG_CTRL_3_PIN, INPUT_PULLUP);
-    pinMode(DIG_CTRL_4_PIN, INPUT_PULLUP);
+    CtrlType[CTRL_1] = PIN_TYPE_PLAYER_1;
+    CtrlType[CTRL_2] = PIN_TYPE_PLAYER_2;
+    CtrlType[CTRL_3] = PIN_TYPE_PLAYER_3;
+    CtrlType[CTRL_4] = PIN_TYPE_PLAYER_4;
+    pinMode(DIG_CTRL_1_PIN, PIN_TYPE_PLAYER_1); // pull up in adc
+    pinMode(DIG_CTRL_2_PIN, PIN_TYPE_PLAYER_2);
+    pinMode(DIG_CTRL_3_PIN, PIN_TYPE_PLAYER_3);
+    pinMode(DIG_CTRL_4_PIN, PIN_TYPE_PLAYER_4);
 }
 
 void Controller::controller_init(OneController *controller, ControllerType mode, byte carNumber)
@@ -20,6 +23,7 @@ void Controller::controller_init(OneController *controller, ControllerType mode,
     controller->mode = mode;
     controller->pin = DIGITAL_CTRL[carNumber];
     controller->delta_analog = DELTA_ANALOG;
+    controller->number = carNumber;
 }
 
 byte Controller::controller_getStatus(OneController *ct)
@@ -27,7 +31,15 @@ byte Controller::controller_getStatus(OneController *ct)
 
     if (ct->mode == DIGITAL_MODE)
     {
-        return digitalRead(ct->pin);
+        // return digitalRead(ct->pin);
+        if (CtrlType[ct->number] == INPUT_PULLUP)
+        {
+            return !digitalRead(ct->pin);
+        }
+        else
+        {
+            return digitalRead(ct->pin);
+        }
     }
     else if (ct->mode == ANALOG_MODE)
     {
@@ -76,7 +88,14 @@ float Controller::controller_getAccel(void)
 
 bool Controller::controller_isActive(byte carNumber)
 {
-    return !digitalRead(DIGITAL_CTRL[carNumber]);
+    if (CtrlType[carNumber] == INPUT_PULLUP)
+    {
+        return !digitalRead(DIGITAL_CTRL[carNumber]);
+    }
+    else
+    {
+        return digitalRead(DIGITAL_CTRL[carNumber]);
+    }
 }
 
 /*void Controller::set_controllers_mode(OneController *controller, ControllerType mode)

@@ -1375,7 +1375,7 @@ void loop()
 
     if (goOn || (!race.cfg.startline))
     { // Standalone mode is Ready for Countdown __OR__ Network mode and Race does not starts here
-      // debug("PHASE: ready / for countdown");
+      debug("PHASE: ready / for countdown");
       for (int i = 0; i < race.numcars; ++i)
       {
         car_resetPosition(&cars[i], true);
@@ -1472,7 +1472,7 @@ void loop()
 
   case COMPLETE:
   {
-    // debug("PHASE: complete");
+    debug("PHASE: complete");
     strip_clear(&theTrack, false);
     track.Show();
     draw_winner(&theTrack, cars[race.winner].color);

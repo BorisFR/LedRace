@@ -2,9 +2,54 @@
 #define COMMON_H
 #pragma once
 
-#define SERIAL_BAUD 115200
-
+// #define PROTO_DEMO
+#ifdef PROTO_DEMO
+#define NUMBER_OF_LED 64
+#define PIN_LEDSTRIP 22
+#define BRIGHTNESS_LED 84
+#define PIN_AUDIOSPEAKER 23
 #define MAX_PLAYER_NUMBER 4
+#define PIN_PLAYER_1 12
+#define PIN_PLAYER_2 14
+#define PIN_PLAYER_3 27
+#define PIN_PLAYER_4 26
+#define PIN_TYPE INPUT_PULLUP
+
+#define RAMP_START 29
+#define RAMP_CENTER 40
+#define RAMP_END 50
+#define RAMP_HEIGHT 2
+
+#else
+
+#define NUMBER_OF_LED 83
+#define PIN_LEDSTRIP 13
+#define BRIGHTNESS_LED 100
+#define PIN_AUDIOSPEAKER 25
+#define MAX_PLAYER_NUMBER 4
+#define PIN_PLAYER_1 22
+#define PIN_PLAYER_2 23
+#define PIN_PLAYER_3 27
+#define PIN_PLAYER_4 26
+#define PIN_TYPE_PLAYER_1 INPUT_PULLUP
+#define PIN_TYPE_PLAYER_2 INPUT_PULLUP
+#define PIN_TYPE_PLAYER_3 INPUT_PULLUP
+#define PIN_TYPE_PLAYER_4 INPUT_PULLUP
+
+#define RAMP_START 58  // 174
+#define RAMP_CENTER 62 // 188
+#define RAMP_END 67    // 202
+#define RAMP_HEIGHT 4
+#define LOOP_START 3
+#define LOOP_CENTER 13
+#define LOOP_END 22
+#define LOOP_HEIGHT 4
+
+#endif
+
+#define RACE_LOOP_NUMBER 5
+
+#define SERIAL_BAUD 115200
 
 #define EOL '\n' // End of Command char used in Protocol
 

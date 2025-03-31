@@ -3,7 +3,7 @@
 LedStrip::LedStrip()
 {
     FastLED.addLeds<WS2812B, PIN_LED, GRB>(leds, NUMBER_OF_LED);
-    FastLED.setBrightness(84);
+    FastLED.setBrightness(BRIGHTNESS_LED);
 }
 
 void LedStrip::Setup()

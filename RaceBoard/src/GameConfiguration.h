@@ -1,7 +1,8 @@
 #ifndef GAME_CONFIGURATION_H
 #define GAME_CONFIGURATION_H
 
-#define MAX_PLAYER_NUMBER 4
+#include "./../../common/Common.h"
+// #define MAX_PLAYER_NUMBER 4
 
 /// LED number in the Strip used as a Semaphore (Countdown phase)
 #define LED_SEMAPHORE 2
@@ -19,7 +20,7 @@
 // Default values loaded on "D" command received (Serial Protocol)
 //////////////////////////////////////////////////////////////////
 #define BOXLEN 10
-#define NUMLAP 5
+#define NUMLAP RACE_LOOP_NUMBER
 #define BATTERY_MODE false
 #define AUTOSTART_MODE false
 #define BOX_ALWAYS_ON false

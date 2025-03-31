@@ -25,6 +25,7 @@ public:
 
 private:
     int DIGITAL_CTRL[MAX_PLAYER_NUMBER];
+    uint8_t CtrlType[MAX_PLAYER_NUMBER];
 
     // static float const Car_ACCELERATION = 0.15;
     //  TODO: 0.2;

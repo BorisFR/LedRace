@@ -12,7 +12,7 @@
     ******************************************************************
 */
 
-#define NUMBER_OF_LED 64
+// #define NUMBER_OF_LED 64
 
 // LED Strip
 // =========
@@ -50,8 +50,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 enum hw_setup
 {
-    PIN_LED = 22,
-    PIN_AUDIO = 23,
+    PIN_LED = PIN_LEDSTRIP,
+    PIN_AUDIO = PIN_AUDIOSPEAKER,
 };
 
 // Digital Controllers (Buttons)
@@ -72,9 +72,9 @@ enum hw_setup
 //  | DIG_CTRL_4_PIN |>-------->o|__________________|
 //   \______________/
 //
-#define DIG_CTRL_1_PIN 12 // switch player 1 to PIN and GND
-#define DIG_CTRL_2_PIN 14 // switch player 2 to PIN and GND
-#define DIG_CTRL_3_PIN 27 // switch player 3 to PIN and GND
-#define DIG_CTRL_4_PIN 26 // switch player 4 to PIN and GND
+#define DIG_CTRL_1_PIN PIN_PLAYER_1 // switch player 1 to PIN and GND
+#define DIG_CTRL_2_PIN PIN_PLAYER_2 // switch player 2 to PIN and GND
+#define DIG_CTRL_3_PIN PIN_PLAYER_3 // switch player 3 to PIN and GND
+#define DIG_CTRL_4_PIN PIN_PLAYER_4 // switch player 4 to PIN and GND
 
 #endif

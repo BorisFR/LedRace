@@ -22,10 +22,10 @@ void param_setdefault(struct ConfigurationParameter *cfg, uint16_t numberOfLeds)
     cfg->ramp.high = 6;
     param_option_set(cfg, SLOPE_MODE_OPTION, SLOPE_ALWAYS_ON);*/
 
-    cfg->ramp.init = 29;
-    cfg->ramp.center = 40;
-    cfg->ramp.end = 50;
-    cfg->ramp.high = 2;
+    cfg->ramp.init = RAMP_START;
+    cfg->ramp.center = RAMP_CENTER;
+    cfg->ramp.end = RAMP_END;
+    cfg->ramp.high = RAMP_HEIGHT;
     param_option_set(cfg, SLOPE_MODE_OPTION, SLOPE_ALWAYS_ON);
 
     cfg->track.nled_total = numberOfLeds; // NUMBER_OF_LED: Total LED number in the racetrack (default:300 -> 5mt, 60LED/mt Strip)
